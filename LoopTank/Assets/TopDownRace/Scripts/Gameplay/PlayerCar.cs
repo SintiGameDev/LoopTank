@@ -24,6 +24,8 @@ namespace TopDownRace
         private Transform m_TankTop;
         private bool m_CollisionsIgnored = false;
 
+        private float targetTimeScale = 1f;
+
         void Awake()
         {
             m_Current = this;
@@ -106,13 +108,18 @@ namespace TopDownRace
                     if (Mathf.Abs(vertical) > 0.01f)
                     {
                         GetComponent<CarPhysics>().m_InputSteer = -horizontal * m_RotationSpeed * (vertical > 0 ? 1 : -1);
+                        targetTimeScale = 1f;
                     }
                     else
                     {
                         GetComponent<CarPhysics>().m_InputSteer = -horizontal * m_RotationSpeed;
+                        targetTimeScale = Mathf.Clamp(Mathf.Abs(GetComponent<CarPhysics>().m_InputSteer), 0.2f, 1f); // z.B. min 0.2
                     }
                 }
             }
+
+            // Smoothes Interpolieren der Zeit
+            Time.timeScale = Mathf.Lerp(Time.timeScale, targetTimeScale, Time.unscaledDeltaTime * 5f);
 
             if (m_TankTop != null)
             {
