@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Rival
   - Menu
+  - TankTop
   layers:
   - Default
   - TransparentFX
