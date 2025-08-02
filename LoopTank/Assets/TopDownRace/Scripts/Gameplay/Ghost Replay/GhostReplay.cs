@@ -63,7 +63,7 @@ public class GhostReplay : MonoBehaviour
         rb.MovePosition(pos);
         rb.MoveRotation(rot);
 
-        Debug.Log($"Ghost Replay: t={t:F2} pos={pos} rot={rot} seg={seg:F2} frame={i}/{source.frames.Count}");
-        Debug.Log($"LapRecorder: Frame aufgenommen t={t:F2}, pos={rb.position}, rotZ={rb.rotation}, frames.Count={source.frames.Count}");
+        //Debug.Log($"Ghost Replay: t={t:F2} pos={pos} rot={rot} seg={seg:F2} frame={i}/{source.frames.Count}");
+        //Debug.Log($"LapRecorder: Frame aufgenommen t={t:F2}, pos={rb.position}, rotZ={rb.rotation}, frames.Count={source.frames.Count}");
     }
 }
