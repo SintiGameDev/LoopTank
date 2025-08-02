@@ -108,12 +108,12 @@ namespace TopDownRace
                     if (Mathf.Abs(vertical) > 0.01f)
                     {
                         GetComponent<CarPhysics>().m_InputSteer = -horizontal * m_RotationSpeed * (vertical > 0 ? 1 : -1);
-                        targetTimeScale = 1f;
+                        //targetTimeScale = 1f;
                     }
                     else
                     {
                         GetComponent<CarPhysics>().m_InputSteer = -horizontal * m_RotationSpeed;
-                        targetTimeScale = Mathf.Clamp(Mathf.Abs(GetComponent<CarPhysics>().m_InputSteer), 0.2f, 1f); // z.B. min 0.2
+                        //targetTimeScale = Mathf.Clamp(Mathf.Abs(GetComponent<CarPhysics>().m_InputSteer), 0.2f, 1f); // z.B. min 0.2
                     }
                 }
             }
