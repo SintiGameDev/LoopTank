@@ -9,6 +9,7 @@ TagManager:
   - TankTop
   - Ghost
   - CollisionIgnorer
+  - Timer
   layers:
   - Default
   - TransparentFX
