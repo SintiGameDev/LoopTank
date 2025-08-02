@@ -28,7 +28,7 @@ namespace TopDownRace
         {
             if (collision.gameObject.tag == "Player")
             {
-               //Debug.Log("Checkpoint: Player has passed checkpoint " + m_ID + "and Current Checkpoint" + PlayerCar.m_Current.m_CurrentCheckpoint );
+               Debug.Log("Checkpoint: Player has passed checkpoint " + m_ID + "and Current Checkpoint" + PlayerCar.m_Current.m_CurrentCheckpoint );
                 //PlayerCar.m_Current.m_CurrentCheckpoint = PlayerCar.m_Current.m_CurrentCheckpoint - 1;
                  if (PlayerCar.m_Current.m_CurrentCheckpoint == m_ID) //TODO: Hier in den Iff komme ich nicht rein
                 //if(true == true) //TODO: Hier in den Iff komme ich nicht rein
@@ -41,7 +41,7 @@ namespace TopDownRace
                         GhostManager.Instance.OnLapFinished(lapTime);
 
                         GameControl.m_Current.m_FinishedLaps++;
-                        //Debug.Log("Checkpoint: Player has passed the finish line. Current Lap: " + GameControl.m_Current.m_FinishedLaps);
+                        Debug.Log("Checkpoint: Player has passed the finish line. Current Lap: " + GameControl.m_Current.m_FinishedLaps);
                         if (!GameControl.m_Current.PlayerLapEndCheck())
                         {
                             //Debug.Log("Checkpoint: Player has finished the lap, resetting checkpoints.");
