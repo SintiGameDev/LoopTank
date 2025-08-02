@@ -133,7 +133,7 @@ GameObject:
   - component: {fileID: -5082057054596268047}
   m_Layer: 6
   m_Name: Ghost
-  m_TagString: Player
+  m_TagString: Ghost
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -172,6 +172,7 @@ MonoBehaviour:
   m_Speed: 0
   m_CurrentCheckpoint: 0
   m_Control: 0
+  m_RotationSpeed: 3
 --- !u!50 &802556952416478341
 Rigidbody2D:
   serializedVersion: 5

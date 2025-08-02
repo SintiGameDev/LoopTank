@@ -66,6 +66,11 @@ namespace TopDownRace
             // Rivals spawnen (unverändert)
             for (int i = 1; i < 4; i++)
             {
+                if(m_RivalCarPrefab == null)
+                {
+                    Debug.LogError("Rival Car Prefab is not assigned in GameControl!");
+                    return;
+                }
                 GameObject rivalCar = Instantiate(m_RivalCarPrefab);
                 rivalCar.transform.position = RaceTrackControl.m_Main.m_StartPositions[i].position;
                 rivalCar.transform.rotation = RaceTrackControl.m_Main.m_StartPositions[i].rotation;

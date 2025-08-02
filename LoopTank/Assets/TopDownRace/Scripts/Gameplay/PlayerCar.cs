@@ -45,6 +45,22 @@ namespace TopDownRace
                 Debug.LogError("TankTop-Objekt nicht gefunden! Stelle sicher, dass ein Kindobjekt mit dem Namen 'TankTop' existiert.", this);
             }
         }
+        private void OnTriggerEnter2D(Collider2D collision)
+        {
+            if (collision.CompareTag("Ghost"))
+            {
+                // Wenn der Panzer einen Ghost berührt, wird die Kontrolle deaktiviert
+                m_Control = false;
+                Debug.Log("Ghost berührt! Kontrolle deaktiviert.");
+                UISystem.ShowUI("win-ui");
+            }
+            else if (collision.CompareTag("Ghost"))
+            {
+                // Wenn der Panzer einen Checkpoint berührt, wird die Kontrolle aktiviert
+                m_Control = true;
+                Debug.Log("Checkpoint berührt! Kontrolle aktiviert.");
+            }
+        }
 
         void Update()
         {
