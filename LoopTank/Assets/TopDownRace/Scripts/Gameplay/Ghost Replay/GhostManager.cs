@@ -1,6 +1,6 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
-// Zuständig für: Ghost-Prefab spawnen, "letzte" und "beste" Runde verwalten
+// ZustÃ¤ndig fÃ¼r: Ghost-Prefab spawnen, "letzte" und "beste" Runde verwalten
 public class GhostManager : MonoBehaviour
 {
     public static GhostManager Instance { get; private set; }
@@ -53,7 +53,7 @@ public class GhostManager : MonoBehaviour
     {
         playerRecorder.EndLap(lapTime);
 
-        // "Letzte Runde" übernehmen
+        // "Letzte Runde" Ã¼bernehmen
         lastLap = Clone(playerRecorder.currentLap);
 
         // "Beste Runde" updaten
@@ -61,7 +61,7 @@ public class GhostManager : MonoBehaviour
             bestLap = Clone(playerRecorder.currentLap);
     }
 
-    // Einfacher Deep Copy, damit die ScriptableObjects unabhängig sind
+    // Einfacher Deep Copy, damit die ScriptableObjects unabhÃ¤ngig sind
     LapData Clone(LapData src)
     {
         var c = ScriptableObject.CreateInstance<LapData>();
@@ -71,6 +71,6 @@ public class GhostManager : MonoBehaviour
         return c;
     }
 
-    // Optional: UI-Buttons können das hier aufrufen
+    // Optional: UI-Buttons kÃ¶nnen das hier aufrufen
     public void SetMode(int m) { mode = (GhostMode)m; }
 }

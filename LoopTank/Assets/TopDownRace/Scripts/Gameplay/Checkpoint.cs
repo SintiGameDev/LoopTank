@@ -41,7 +41,7 @@ namespace TopDownRace
                         GhostManager.Instance.OnLapFinished(lapTime);
 
                         GameControl.m_Current.m_FinishedLaps++;
-                        Debug.Log("Checkpoint: Player has passed the finish line. Current Lap: " + GameControl.m_Current.m_FinishedLaps);
+                        //Debug.Log("Checkpoint: Player has passed the finish line. Current Lap: " + GameControl.m_Current.m_FinishedLaps);
                         if (!GameControl.m_Current.PlayerLapEndCheck())
                         {
                             //Debug.Log("Checkpoint: Player has finished the lap, resetting checkpoints.");
