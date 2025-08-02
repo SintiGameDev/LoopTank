@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -47,11 +47,23 @@ namespace TopDownRace
         {
             m_Cars = new GameObject[4];
 
+            // Player spawnen
             GameObject playerCar = Instantiate(m_PlayerCarPrefab);
             playerCar.transform.position = RaceTrackControl.m_Main.m_StartPositions[0].position;
             playerCar.transform.rotation = RaceTrackControl.m_Main.m_StartPositions[0].rotation;
             m_Cars[0] = playerCar;
 
+            // ➜ LapRecorder sicherstellen (falls nicht schon am Prefab)
+            var recorder = playerCar.GetComponent<LapRecorder>();
+            if (recorder == null) recorder = playerCar.AddComponent<LapRecorder>();
+
+            // ➜ GhostManager mit Recorder füttern
+            GhostManager.Instance.playerRecorder = recorder;
+
+            // (Optional) gleich Ghost für die neue Runde vorbereiten
+            GhostManager.Instance.OnLapStarted();
+
+            // Rivals spawnen (unverändert)
             for (int i = 1; i < 4; i++)
             {
                 GameObject rivalCar = Instantiate(m_RivalCarPrefab);
@@ -61,10 +73,9 @@ namespace TopDownRace
             }
 
             m_PlayerPosition = 0;
-
             StartCoroutine(Co_StartRace());
-
         }
+
 
         // Update is called once per frame
         void Update()
@@ -127,13 +138,19 @@ namespace TopDownRace
             yield return new WaitForSeconds(1);
             m_StartTimer--;
             m_StartRace = true;
+
+            // ➜ Jetzt beginnt die erste Runde wirklich:
+            StartLapTimer();
+            // Falls du OnLapStarted noch nicht in Start() aufgerufen hast, dann hier:
+            // GhostManager.Instance.OnLapStarted();
         }
+
 
 
         ///----------------Gemini-------------------
 
 
-            private float m_LapStartTime;
+        private float m_LapStartTime;
 
             public float GetCurrentLapTime()
             {

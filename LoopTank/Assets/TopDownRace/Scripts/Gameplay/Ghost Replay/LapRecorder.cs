@@ -41,7 +41,7 @@ public class LapRecorder : MonoBehaviour
     {
         t += Time.fixedDeltaTime;
         if (t < nextSample) return;
-
+        
         currentLap.frames.Add(new LapFrame
         {
             t = t,
@@ -50,5 +50,6 @@ public class LapRecorder : MonoBehaviour
         });
 
         nextSample += sampleInterval;
+        //Debug.Log($"LapRecorder: Sampled frame at t={t:F2} pos={rb.position} rotZ={rb.rotation}");
     }
 }

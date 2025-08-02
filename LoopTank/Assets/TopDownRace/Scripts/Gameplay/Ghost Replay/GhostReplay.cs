@@ -15,13 +15,16 @@ public class GhostReplay : MonoBehaviour
     public void Play(LapData lap)
     {
         Debug.Log("Ghost Replay started for " + lap.name);
+        Debug.Log("source: " + source);
+        Debug.Log("source.frames: " + (source?.frames != null ? source.frames.Count : 0));
+        Debug.Log("lap: " + lap);
+        Debug.Log("lap.frames: " + (lap?.frames != null ? lap.frames.Count : 0));
+        Debug.Log("source == lap: " + (source == lap));
         source = lap;
-        if (source == null)
-        {
-            Debug.Log("Source is NUll");
-        }
+        Debug.Log("source.frames.Count: " + (source?.frames?.Count ?? 0));
         if (source == null || source.frames.Count < 2) { playing = false; return; } //TODO: HIer
         Debug.Log($"Ghost Replay: {source.frames.Count} frames, total time {source.frames[^1].t:F2}s");
+        Debug.Log("Clone: Kopiere " + source.frames.Count + " Frames.");
         i = 1;
         t = 0f;
         // sofort an den ersten Frame setzen
@@ -61,5 +64,6 @@ public class GhostReplay : MonoBehaviour
         rb.MoveRotation(rot);
 
         Debug.Log($"Ghost Replay: t={t:F2} pos={pos} rot={rot} seg={seg:F2} frame={i}/{source.frames.Count}");
+        Debug.Log($"LapRecorder: Frame aufgenommen t={t:F2}, pos={rb.position}, rotZ={rb.rotation}, frames.Count={source.frames.Count}");
     }
 }

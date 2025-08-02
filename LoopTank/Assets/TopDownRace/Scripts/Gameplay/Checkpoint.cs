@@ -28,11 +28,12 @@ namespace TopDownRace
         {
             if (collision.gameObject.tag == "Player")
             {
-               // Debug.Log("Checkpoint: Player has passed checkpoint " + m_ID);
-                // if (PlayerCar.m_Current.m_CurrentCheckpoint == m_ID) //TODO: Hier in den Iff komme ich nicht rein
-                if(true == true) //TODO: Hier in den Iff komme ich nicht rein
+               //Debug.Log("Checkpoint: Player has passed checkpoint " + m_ID + "and Current Checkpoint" + PlayerCar.m_Current.m_CurrentCheckpoint );
+                //PlayerCar.m_Current.m_CurrentCheckpoint = PlayerCar.m_Current.m_CurrentCheckpoint - 1;
+                 if (PlayerCar.m_Current.m_CurrentCheckpoint == m_ID) //TODO: Hier in den Iff komme ich nicht rein
+                //if(true == true) //TODO: Hier in den Iff komme ich nicht rein
+                Debug.Log("Checkpoint: Player has passed checkpoint " + m_ID + " and Current Checkpoint " + PlayerCar.m_Current.m_CurrentCheckpoint);
                 {
-                    //Debug.Log("Checkpoint: Player has already passed this checkpoint.");
                     if (m_ID == 0)
                     {
                         // --- GHOST: Runde beenden ---

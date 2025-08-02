@@ -42,7 +42,7 @@ public class GhostManager : MonoBehaviour
         playerRecorder.BeginLap();
 
         // Ghost basierend auf Modus spielen
-        Debug.Log($"GhostManager: Starting ghost in mode {mode}");
+        //Debug.Log($"GhostManager: Starting ghost in mode {mode}");
         if (mode == GhostMode.LastLap && lastLap != null) ghostInstance.Play(lastLap);
         else if (mode == GhostMode.BestLap && bestLap != null) ghostInstance.Play(bestLap);
         else ghostInstance.Stop();
