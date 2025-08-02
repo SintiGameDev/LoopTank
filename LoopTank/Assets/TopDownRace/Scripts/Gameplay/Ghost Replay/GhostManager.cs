@@ -3,6 +3,18 @@ using UnityEngine;
 // Zuständig für: Ghost-Prefab spawnen, "letzte" und "beste" Runde verwalten
 public class GhostManager : MonoBehaviour
 {
+    public static GhostManager Instance { get; private set; }
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+
     [Header("References")]
     public LapRecorder playerRecorder;
     public GameObject ghostPrefab;
@@ -30,6 +42,7 @@ public class GhostManager : MonoBehaviour
         playerRecorder.BeginLap();
 
         // Ghost basierend auf Modus spielen
+        Debug.Log($"GhostManager: Starting ghost in mode {mode}");
         if (mode == GhostMode.LastLap && lastLap != null) ghostInstance.Play(lastLap);
         else if (mode == GhostMode.BestLap && bestLap != null) ghostInstance.Play(bestLap);
         else ghostInstance.Stop();

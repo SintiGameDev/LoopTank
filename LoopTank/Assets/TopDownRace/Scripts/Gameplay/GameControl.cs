@@ -129,5 +129,22 @@ namespace TopDownRace
             m_StartRace = true;
         }
 
+
+        ///----------------Gemini-------------------
+
+
+            private float m_LapStartTime;
+
+            public float GetCurrentLapTime()
+            {
+                return Time.time - m_LapStartTime;
+            }
+
+            // Rufe das beim Start einer neuen Runde auf:
+            public void StartLapTimer()
+            {
+                m_LapStartTime = Time.time;
+            }
+        
     }
 }

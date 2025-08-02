@@ -28,16 +28,27 @@ namespace TopDownRace
         {
             if (collision.gameObject.tag == "Player")
             {
-                if (PlayerCar.m_Current.m_CurrentCheckpoint == m_ID)
+               // Debug.Log("Checkpoint: Player has passed checkpoint " + m_ID);
+                // if (PlayerCar.m_Current.m_CurrentCheckpoint == m_ID) //TODO: Hier in den Iff komme ich nicht rein
+                if(true == true) //TODO: Hier in den Iff komme ich nicht rein
                 {
+                    //Debug.Log("Checkpoint: Player has already passed this checkpoint.");
                     if (m_ID == 0)
                     {
+                        // --- GHOST: Runde beenden ---
+                        float lapTime = GameControl.m_Current.GetCurrentLapTime(); // Passe dies ggf. an!
+                        GhostManager.Instance.OnLapFinished(lapTime);
+
                         GameControl.m_Current.m_FinishedLaps++;
+                        Debug.Log("Checkpoint: Player has passed the finish line. Current Lap: " + GameControl.m_Current.m_FinishedLaps);
                         if (!GameControl.m_Current.PlayerLapEndCheck())
                         {
+                            //Debug.Log("Checkpoint: Player has finished the lap, resetting checkpoints.");
                             PlayerCar.m_Current.m_CurrentCheckpoint = 1;
-                        }
 
+                            // --- GHOST: Neue Runde starten ---
+                            GhostManager.Instance.OnLapStarted();
+                        }
                     }
                     else
                     {
@@ -46,9 +57,7 @@ namespace TopDownRace
                         {
                             PlayerCar.m_Current.m_CurrentCheckpoint = 0;
                         }
-
                     }
-
                 }
             }
             else if (collision.gameObject.tag == "Rival")

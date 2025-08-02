@@ -14,8 +14,14 @@ public class GhostReplay : MonoBehaviour
 
     public void Play(LapData lap)
     {
+        Debug.Log("Ghost Replay started for " + lap.name);
         source = lap;
-        if (source == null || source.frames.Count < 2) { playing = false; return; }
+        if (source == null)
+        {
+            Debug.Log("Source is NUll");
+        }
+        if (source == null || source.frames.Count < 2) { playing = false; return; } //TODO: HIer
+        Debug.Log($"Ghost Replay: {source.frames.Count} frames, total time {source.frames[^1].t:F2}s");
         i = 1;
         t = 0f;
         // sofort an den ersten Frame setzen
@@ -28,6 +34,7 @@ public class GhostReplay : MonoBehaviour
 
     public void Stop()
     {
+        Debug.Log("Ghost Replay stopped");
         playing = false;
         gameObject.SetActive(false);
     }
@@ -52,5 +59,7 @@ public class GhostReplay : MonoBehaviour
 
         rb.MovePosition(pos);
         rb.MoveRotation(rot);
+
+        Debug.Log($"Ghost Replay: t={t:F2} pos={pos} rot={rot} seg={seg:F2} frame={i}/{source.frames.Count}");
     }
 }

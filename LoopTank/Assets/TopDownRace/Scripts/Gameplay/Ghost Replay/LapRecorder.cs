@@ -19,6 +19,8 @@ public class LapRecorder : MonoBehaviour
 
     public void BeginLap()
     {
+        if (currentLap == null)
+            currentLap = ScriptableObject.CreateInstance<LapData>();
         currentLap.Clear();
         t = 0f; nextSample = 0f;
         enabled = true;
@@ -26,6 +28,8 @@ public class LapRecorder : MonoBehaviour
 
     public void EndLap(float lapTime)
     {
+        if (currentLap == null)
+            currentLap = ScriptableObject.CreateInstance<LapData>();
         currentLap.lapTime = lapTime;
         enabled = false;
     }
