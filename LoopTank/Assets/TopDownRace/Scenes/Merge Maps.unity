@@ -327,11 +327,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1340772332008051311, guid: add96481182103d4cac11b3b73a803e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 157.8
+      value: 155.62
       objectReference: {fileID: 0}
     - target: {fileID: 1340772332008051311, guid: add96481182103d4cac11b3b73a803e4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 34.6
+      value: 52.77
       objectReference: {fileID: 0}
     - target: {fileID: 1340772332008051311, guid: add96481182103d4cac11b3b73a803e4, type: 3}
       propertyPath: m_LocalPosition.z
@@ -615,7 +615,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_SmoothTime: 0.1
-  m_Target: {fileID: 0}
+  m_Target: {fileID: 3225385444474873089, guid: 0a5ac7867dfc1e94babd07523662af6a, type: 3}
 --- !u!1001 &543222878
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1733,12 +1733,20 @@ PrefabInstance:
       value: CollisionIgnorer
       objectReference: {fileID: 0}
     - target: {fileID: 4965079505293128975, guid: 489b1b87a2eb65d449996a92134097cf, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 6.9929943
+      objectReference: {fileID: 0}
+    - target: {fileID: 4965079505293128975, guid: 489b1b87a2eb65d449996a92134097cf, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 3.1207674
+      objectReference: {fileID: 0}
+    - target: {fileID: 4965079505293128975, guid: 489b1b87a2eb65d449996a92134097cf, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 162.6
+      value: 161.3
       objectReference: {fileID: 0}
     - target: {fileID: 4965079505293128975, guid: 489b1b87a2eb65d449996a92134097cf, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 21.5
+      value: 27.7
       objectReference: {fileID: 0}
     - target: {fileID: 4965079505293128975, guid: 489b1b87a2eb65d449996a92134097cf, type: 3}
       propertyPath: m_LocalPosition.z

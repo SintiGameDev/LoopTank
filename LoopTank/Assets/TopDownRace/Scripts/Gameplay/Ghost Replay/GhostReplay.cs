@@ -28,9 +28,10 @@ public class GhostReplay : MonoBehaviour
 
     public void Stop()
     {
-        Debug.Log("Ghost Replay stopped");
-        playing = false;
-        gameObject.SetActive(false);
+        //Testweise aus, aber wollen wir das eigentlich haben?
+        //Debug.Log("Ghost Replay stopped");
+        //playing = false;
+        //gameObject.SetActive(false);
     }
 
     void FixedUpdate()

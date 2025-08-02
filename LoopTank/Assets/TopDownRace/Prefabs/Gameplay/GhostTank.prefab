@@ -214,11 +214,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3225385444474873089}
-  - component: {fileID: 3740486400603162936}
   - component: {fileID: 802556952416478341}
-  - component: {fileID: 7284052858744484378}
   - component: {fileID: 1336818291986090925}
-  - component: {fileID: -297547805703134724}
   - component: {fileID: 5637705819288424040}
   m_Layer: 0
   m_Name: GhostTank
@@ -247,22 +244,6 @@ Transform:
   - {fileID: 4328520295589983419}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3740486400603162936
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6258295094829372238}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4d832c183b7d9a542b7bf7e6fba7733b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Speed: 0
-  m_CurrentCheckpoint: 0
-  m_Control: 0
-  m_RotationSpeed: 0.96
 --- !u!50 &802556952416478341
 Rigidbody2D:
   serializedVersion: 5
@@ -290,24 +271,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 0
---- !u!114 &7284052858744484378
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6258295094829372238}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 71b11d1014ab12a4ab59ada05af70e9c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Body: {fileID: 802556952416478341}
-  m_InputAccelerate: 0
-  m_InputSteer: 0
-  m_SpeedForce: 900
-  m_TireTracks: {fileID: 5057899167434053767, guid: e3e316b6b32e0dd498ebc3fb2003f777, type: 3}
-  m_TireMarkPoint: {fileID: 4328520295589983419}
 --- !u!70 &1336818291986090925
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -345,20 +308,6 @@ CapsuleCollider2D:
   m_Offset: {x: -0.021864897, y: -0.02187562}
   m_Size: {x: 11.463783, y: 6.7428117}
   m_Direction: 1
---- !u!114 &-297547805703134724
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6258295094829372238}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5e12e65ab6876d6468bac7ea40aa0129, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  currentLap: {fileID: 0}
-  sampleInterval: 0.02
 --- !u!114 &5637705819288424040
 MonoBehaviour:
   m_ObjectHideFlags: 0

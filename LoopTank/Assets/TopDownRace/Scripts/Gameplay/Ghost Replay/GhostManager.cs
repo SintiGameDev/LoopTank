@@ -1,6 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
-// Zuständig für: Ghost-Prefab spawnen, "letzte" und "beste" Runde verwalten
 public class GhostManager : MonoBehaviour
 {
     public static GhostManager Instance { get; private set; }
@@ -9,7 +9,8 @@ public class GhostManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
+            Debug.LogWarning("Multiple GhostManager instances found! Destroying duplicate.");
+            //Destroy(gameObject);
             return;
         }
         Instance = this;
@@ -18,34 +19,54 @@ public class GhostManager : MonoBehaviour
     [Header("References")]
     public LapRecorder playerRecorder;
     public GameObject ghostPrefab;
+    public Transform ghostParent; // optional für Ordnerstruktur
 
     public enum GhostMode { Off, LastLap, BestLap }
 
     [Header("Ghost Mode")]
     public GhostMode mode = GhostMode.LastLap;
 
+    [Header("Limits")]
+    public int maxGhosts = 2; // <-- Hier die maximale Anzahl definieren
+
     LapData lastLap;
     LapData bestLap;
 
-    GhostReplay ghostInstance;
-
-    void Start()
-    {
-        // Ghost instanzieren & anfangs verstecken
-        ghostInstance = Instantiate(ghostPrefab).GetComponent<GhostReplay>();
-        ghostInstance.Stop();
-    }
+    // Liste ALLER Ghost-Instanzen
+    private List<GhostReplay> ghostInstances = new List<GhostReplay>();
 
     // Call vom Renn-Controller am Start/Ziellinie:
     public void OnLapStarted()
     {
         playerRecorder.BeginLap();
 
-        // Ghost basierend auf Modus spielen
-        //Debug.Log($"GhostManager: Starting ghost in mode {mode}");
-        if (mode == GhostMode.LastLap && lastLap != null) ghostInstance.Play(lastLap);
-        else if (mode == GhostMode.BestLap && bestLap != null) ghostInstance.Play(bestLap);
-        else ghostInstance.Stop();
+        LapData toReplay = null;
+        if (mode == GhostMode.LastLap) toReplay = lastLap;
+        else if (mode == GhostMode.BestLap) toReplay = bestLap;
+
+        // Nur wenn wir wirklich eine gespeicherte Runde haben
+        if (toReplay != null)
+        {
+            // Neue Ghost-Instanz erzeugen
+            var go = Instantiate(
+                ghostPrefab,
+                playerRecorder.transform.position,
+                playerRecorder.transform.rotation,
+                ghostParent // kann null sein
+            );
+            var ghost = go.GetComponent<GhostReplay>();
+            ghost.Play(toReplay);
+
+            // In Liste aufnehmen
+            ghostInstances.Add(ghost);
+
+            // Maximale Anzahl beachten: älteste löschen
+            if (ghostInstances.Count > maxGhosts)
+            {
+                Destroy(ghostInstances[0].gameObject);
+                ghostInstances.RemoveAt(0);
+            }
+        }
     }
 
     // Call am Rundenende:
@@ -61,7 +82,7 @@ public class GhostManager : MonoBehaviour
             bestLap = Clone(playerRecorder.currentLap);
     }
 
-    // Einfacher Deep Copy, damit die ScriptableObjects unabhängig sind
+    // Deep Copy, damit alle Ghosts unabhängig laufen
     LapData Clone(LapData src)
     {
         var c = ScriptableObject.CreateInstance<LapData>();
@@ -71,6 +92,27 @@ public class GhostManager : MonoBehaviour
         return c;
     }
 
+    // Zum Löschen aller Ghosts (z.B. beim Reset/Restart)
+    public void ClearAllGhosts()
+    {
+        foreach (var ghost in ghostInstances)
+            if (ghost != null) Destroy(ghost.gameObject);
+        ghostInstances.Clear();
+    }
+
+    // Optional: gezieltes Entfernen eines Ghosts
+    public void RemoveGhost(GhostReplay ghost)
+    {
+        if (ghostInstances.Contains(ghost))
+        {
+            Destroy(ghost.gameObject);
+            ghostInstances.Remove(ghost);
+        }
+    }
+
     // Optional: UI-Buttons können das hier aufrufen
     public void SetMode(int m) { mode = (GhostMode)m; }
+
+    // Für Zugriff von außen (z.B. Anzeige)
+    public IReadOnlyList<GhostReplay> ActiveGhosts => ghostInstances;
 }
