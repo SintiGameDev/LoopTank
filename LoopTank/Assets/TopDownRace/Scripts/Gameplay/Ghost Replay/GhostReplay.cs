@@ -14,17 +14,8 @@ public class GhostReplay : MonoBehaviour
 
     public void Play(LapData lap)
     {
-        Debug.Log("Ghost Replay started for " + lap.name);
-        Debug.Log("source: " + source);
-        Debug.Log("source.frames: " + (source?.frames != null ? source.frames.Count : 0));
-        Debug.Log("lap: " + lap);
-        Debug.Log("lap.frames: " + (lap?.frames != null ? lap.frames.Count : 0));
-        Debug.Log("source == lap: " + (source == lap));
         source = lap;
-        Debug.Log("source.frames.Count: " + (source?.frames?.Count ?? 0));
-        if (source == null || source.frames.Count < 2) { playing = false; return; } //TODO: HIer
-        Debug.Log($"Ghost Replay: {source.frames.Count} frames, total time {source.frames[^1].t:F2}s");
-        Debug.Log("Clone: Kopiere " + source.frames.Count + " Frames.");
+        if (source == null || source.frames.Count < 2) { playing = false; return; } 
         i = 1;
         t = 0f;
         // sofort an den ersten Frame setzen
