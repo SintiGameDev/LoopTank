@@ -230,13 +230,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6136807259202807127}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0.0012370632, w: 0.9999993}
+  m_LocalRotation: {x: -0, y: -0, z: -0.7089307, w: 0.7052783}
   m_LocalPosition: {x: 1.601, y: -0.014, z: 0.04}
   m_LocalScale: {x: 0.19999999, y: 0.19999999, z: 0.2}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1379046595138928208}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -90.296}
 --- !u!1 &6258295094829372238
 GameObject:
   m_ObjectHideFlags: 0
@@ -311,7 +311,7 @@ MonoBehaviour:
   m_TankTopFadeSpeed: 3.6000001
   m_BulletPrefab: {fileID: 4380812528267677971, guid: fda4cf27c94cb9f459ae375de882e03e, type: 3}
   m_BulletSpawnPoint: {fileID: 4308170601247984889}
-  m_BulletSpeed: 15
+  m_BulletSpeed: 150
   m_BulletLifetime: 3
   m_ShootSoundClip: {fileID: 0}
 --- !u!50 &802556952416478341

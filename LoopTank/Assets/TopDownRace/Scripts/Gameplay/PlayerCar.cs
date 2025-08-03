@@ -79,8 +79,8 @@ namespace TopDownRace
         public GameObject m_BulletPrefab;
         [Tooltip("Der Punkt, von dem aus die Kugel gespawnt wird (z.B. die Mündung des Geschützturms).")]
         public Transform m_BulletSpawnPoint;
-        [Tooltip("Die Geschwindigkeit, mit der die Kugel fliegt.")]
-        public float m_BulletSpeed = 15f;
+        [Tooltip("Die Stärke des Impulses, mit dem die Kugel abgefeuert wird.")]
+        public float m_BulletSpeed = 15f; // Bezeichnung beibehalten, aber jetzt als Kraftstärke interpretiert
         [Tooltip("Die Zeit in Sekunden, nach der die Kugel zerstört wird.")]
         public float m_BulletLifetime = 3f;
         [Tooltip("Der Soundeffekt, der beim Abfeuern der Kugel abgespielt wird.")]
@@ -385,8 +385,9 @@ namespace TopDownRace
             // Für einen 2D-Panzer, der sich um die Z-Achse dreht, ist `transform.up` oft die Richtung, in die der Lauf zeigt.
             Vector2 shootDirection = m_BulletSpawnPoint.up; // Oder m_BulletSpawnPoint.right, je nach Ausrichtung deines Bullet Prefabs/Sprites
 
-            // Wende Kraft auf die Kugel an
-            rb.linearVelocity = shootDirection * m_BulletSpeed;
+            // Wende eine einmalige, starke Kraft auf die Kugel an
+            // ForceMode2D.Impulse simuliert einen sofortigen Stoß (wie ein Schuss)
+            rb.AddForce(shootDirection * m_BulletSpeed, ForceMode2D.Impulse);
 
             // Zerstöre die Kugel nach einer bestimmten Zeit, um das Spielfeld sauber zu halten
             Destroy(bullet, m_BulletLifetime);
