@@ -39,7 +39,7 @@ public class GhostManager : MonoBehaviour
     //Timer
     public Timer roundTimer; // Im Inspector zuweisen!
     private bool timerStarted = false; // Merkt, ob der Timer schon gestartet wurde
-    private bool timerUiShown = false; // Verhindert mehrfaches Anzeigen der UI
+    private bool timerUiShown = true; // Verhindert mehrfaches Anzeigen der UI
 
 
     // Call vom Renn-Controller am Start/Ziellinie:
@@ -47,9 +47,37 @@ public class GhostManager : MonoBehaviour
     {
         playerRecorder.BeginLap();
 
+        if (roundTimer == null)
+        {//find timer automatically if not set
+            //roundTimer = GameObject.FindGameObjectsWithTag("Timer");
+            //// Replace this line:
+            //roundTimer = GameObject.FindGameObjectsWithTag("Timer");
+
+            // With the following corrected code:
+            GameObject timerObject = GameObject.FindGameObjectWithTag("Timer");
+            if (timerObject != null)
+            {
+                roundTimer = timerObject.GetComponent<Timer>();
+                if (roundTimer == null)
+                {
+                    Debug.LogError("GhostManager: The object with tag 'Timer' does not have a Timer component.");
+                }
+            }
+            else
+            {
+                Debug.LogError("GhostManager: No GameObject with tag 'Timer' found!");
+            }
+            if (roundTimer == null)
+            {
+                Debug.LogError("GhostManager: No Timer found! Please assign a Timer in the Inspector or ensure one exists in the scene.");
+                return;
+            }
+        }
         // TIMER NUR BEI ERSTER RUNDE STARTEN
-        if (!timerStarted && roundTimer != null)
-        {
+        //if (!timerStarted && roundTimer != null)
+            if (!timerStarted && roundTimer != null)
+            {
+            Debug.Log("GhostManager: Starting round timer.");
             roundTimer.StartTimer();
             timerStarted = true;
             timerUiShown = false; // falls z.B. Reset erlaubt ist

@@ -30,6 +30,9 @@ public class Timer : MonoBehaviour
             {
                 Debug.LogError("GameObject mit Tag 'Timer' gefunden, aber es hat keine TextMeshProUGUI-Komponente (oder UnityEngine.UI.Text-Komponente).", timerTextObject);
             }
+            else { 
+            timerTextUI.text = string.Format("{0:00}:{1:00}", Mathf.FloorToInt(timerDuration / 60), Mathf.FloorToInt(timerDuration % 60)); // Initiale Anzeige
+            }
         }
         else
         {
@@ -66,6 +69,7 @@ public class Timer : MonoBehaviour
 
         while (currentTime > 0)
         {
+            Debug.Log($"Timer läuft: {currentTime} Sekunden verbleibend.");
             // Aktualisiere die UI in jedem Frame
             UpdateTimerUI(currentTime);
 
@@ -94,6 +98,7 @@ public class Timer : MonoBehaviour
 
             // Formatieren als MM:SS
             timerTextUI.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+            Debug.Log($"Timer aktualisiert: {timerTextUI.text}");
         }
     }
 
@@ -106,7 +111,7 @@ public class Timer : MonoBehaviour
             timerCoroutine = null;
             Debug.Log("Timer manuell gestoppt.");
             // Optional: UI auch hier aktualisieren, z.B. auf 0 oder eine Meldung
-            // UpdateTimerUI(0);
+             UpdateTimerUI(0);
         }
     }
 }
