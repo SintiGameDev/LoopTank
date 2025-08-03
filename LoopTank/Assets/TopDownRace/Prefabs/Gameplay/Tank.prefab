@@ -360,8 +360,8 @@ MonoBehaviour:
   m_TireTracks: {fileID: 5057899167434053767, guid: e3e316b6b32e0dd498ebc3fb2003f777, type: 3}
   m_T_TireMarkPoint: {fileID: 4328520295589983419}
   m_TireTrackLoopSoundClip: {fileID: 8300000, guid: eb98fe7603406ad49ac6697a79d35917, type: 3}
-  m_TireTrackMaxVolume: 0.7
-  m_TireTrackFadeSpeed: 2
+  m_TireTrackMaxVolume: 0.383
+  m_TireTrackFadeSpeed: 1.25
 --- !u!70 &1336818291986090925
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
