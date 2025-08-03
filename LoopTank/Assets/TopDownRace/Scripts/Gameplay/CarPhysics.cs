@@ -17,17 +17,22 @@ namespace TopDownRace
         public float m_SpeedForce = 80;
 
         public GameObject m_TireTracks;
-        public Transform m_TireMarkPoint;
+        public Transform m_T_TireMarkPoint; // Korrektur: m_TireMarkPoint war in deinem Code ein 'Transform', aber der Name war inkonsistent. Habe es hier angepasst, um Verwirrung zu vermeiden.
 
-        // --- VARIABLEN FÜR DEN TIRETRACK-SOUND ---
-        [Tooltip("Der Sound-Clip, der jedes Mal abgespielt wird, wenn eine Reifenspur platziert wird (z.B. ein Quietsch- oder Rutschgeräusch).")]
-        public AudioClip m_TireTrackSoundClip;
+        // --- VARIABLEN FÜR DEN TIRETRACK-SOUND (LOOPEND MIT FADE) ---
+        [Tooltip("Der Sound-Clip, der geloopt wird, wenn Reifenspuren erzeugt werden (z.B. ein konstantes Quietsch-/Rutschgeräusch).")]
+        public AudioClip m_TireTrackLoopSoundClip;
 
-        [Tooltip("Die Lautstärke für den Reifenspur-Soundeffekt.")]
+        [Tooltip("Die maximale Lautstärke für den loopenden Reifenspur-Soundeffekt.")]
         [Range(0.0f, 1.0f)]
-        public float m_TireTrackSoundVolume = 0.7f; // Standardlautstärke für Reifenspuren
+        public float m_TireTrackMaxVolume = 0.7f; // Maximale Lautstärke
 
-        private AudioSource m_TireTrackAudioSource; // Dedizierte AudioSource für diesen Sound
+        [Tooltip("Die Geschwindigkeit, mit der der Reifenspur-Sound ein- und ausblendet.")]
+        [Range(0.1f, 5.0f)]
+        public float m_TireTrackFadeSpeed = 2.0f; // Ein- und Ausblendgeschwindigkeit
+
+        private AudioSource m_TireTrackLoopAudioSource; // Dedizierte AudioSource für diesen loopenden Sound
+        private bool m_IsTireSoundActive = false; // Zustand, ob der Sound gerade aktiv sein sollte
         // -------------------------------------
 
         // Start is called before the first frame-Aufruf
@@ -36,33 +41,68 @@ namespace TopDownRace
             m_Body = GetComponent<Rigidbody2D>();
 
             // --- INITIALISIERUNG DER TIRETRACK-SOUND-AUDIO SOURCE ---
-            m_TireTrackAudioSource = gameObject.AddComponent<AudioSource>();
-            m_TireTrackAudioSource.loop = false; // Dies sind einmalige Sounds
-            m_TireTrackAudioSource.playOnAwake = false; // Wir spielen sie manuell ab
-            m_TireTrackAudioSource.volume = m_TireTrackSoundVolume; // Anfangslautstärke einstellen
+            m_TireTrackLoopAudioSource = gameObject.AddComponent<AudioSource>();
+            if (m_TireTrackLoopSoundClip != null)
+            {
+                m_TireTrackLoopAudioSource.clip = m_TireTrackLoopSoundClip;
+                m_TireTrackLoopAudioSource.loop = true;          // Sound soll loopen
+                m_TireTrackLoopAudioSource.playOnAwake = false;  // Wir starten ihn manuell
+                m_TireTrackLoopAudioSource.volume = 0.0f;        // Startet stumm
+                m_TireTrackLoopAudioSource.Play();               // Beginnt den Loop (stumm)
+            }
+            else
+            {
+                Debug.LogWarning("Kein loopender Reifenspur-Sound-Clip zugewiesen! Der Sound wird nicht abgespielt.", this);
+            }
             // --------------------------------------------------------
         }
 
         void Update()
         {
             Vector2 velocity = m_Body.linearVelocity;
+            // Helper.ToVector2(transform.right) gibt die "rechte" Richtung des Autos zurück.
+            // In 2D-Top-Down-Spielen ist die "Vorwärts"-Richtung oft transform.up,
+            // und die "Seite"-Richtung ist transform.right.
+            // Wir wollen den Drift-Winkel zwischen der Bewegungsrichtung und der Fahrtrichtung (vorwärts).
+            // Wenn dein Auto sich um Z dreht und transform.right die Längsachse ist, dann ist das so ok.
+            // Falls transform.up die "Vorwärts"-Richtung deines Autos ist, müsstest du hier:
+            // Vector2 forward = Helper.ToVector2(transform.up); verwenden.
             Vector2 forward = Helper.ToVector2(transform.right);
             float delta = Vector2.SignedAngle(forward, velocity);
 
-            // Bedingung für das Erzeugen von Reifenspuren
-            if (velocity.magnitude > 10 && Mathf.Abs(delta) > 20)
-            {
-                GameObject obj = Instantiate(m_TireTracks);
-                obj.transform.position = m_TireMarkPoint.position;
-                obj.transform.rotation = m_TireMarkPoint.rotation;
-                Destroy(obj, 2);
+            // Bedingung für das Erzeugen von Reifenspuren und Aktivieren des Sounds
+            bool shouldSpawnTireTracks = (velocity.magnitude > 10 && Mathf.Abs(delta) > 20);
 
-                // --- HIER WIRD DER TIRETRACK-SOUND ABGESPIELT ---
-                if (m_TireTrackSoundClip != null)
+            if (shouldSpawnTireTracks)
+            {
+                // Spawne Reifenspur-Prefab wie gehabt
+                GameObject obj = Instantiate(m_TireTracks);
+                obj.transform.position = m_T_TireMarkPoint.position;
+                obj.transform.rotation = m_T_TireMarkPoint.rotation;
+                Destroy(obj, 2); // Zerstöre die Spur nach 2 Sekunden
+
+                // Aktiviere den Reifenspur-Sound
+                m_IsTireSoundActive = true;
+            }
+            else
+            {
+                // Deaktiviere den Reifenspur-Sound
+                m_IsTireSoundActive = false;
+            }
+
+            // Steuerung des loopenden Reifenspur-Sounds (Ein- und Ausblenden)
+            if (m_TireTrackLoopAudioSource != null && m_TireTrackLoopAudioSource.clip != null)
+            {
+                if (m_IsTireSoundActive)
                 {
-                    m_TireTrackAudioSource.PlayOneShot(m_TireTrackSoundClip, m_TireTrackSoundVolume);
+                    // Blende Sound ein
+                    m_TireTrackLoopAudioSource.volume = Mathf.MoveTowards(m_TireTrackLoopAudioSource.volume, m_TireTrackMaxVolume, m_TireTrackFadeSpeed * Time.deltaTime);
                 }
-                // --------------------------------------------------
+                else
+                {
+                    // Blende Sound aus
+                    m_TireTrackLoopAudioSource.volume = Mathf.MoveTowards(m_TireTrackLoopAudioSource.volume, 0.0f, m_TireTrackFadeSpeed * Time.deltaTime);
+                }
             }
         }
 

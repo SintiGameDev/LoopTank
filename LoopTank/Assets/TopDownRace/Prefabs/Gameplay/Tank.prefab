@@ -296,7 +296,7 @@ MonoBehaviour:
   m_CurrentCheckpoint: 0
   m_Control: 0
   m_RotationSpeed: 0.69
-  m_TankTopRotationSpeed: 100
+  m_TankTopRotationSpeed: 50
   m_EngineSoundClip: {fileID: 8300000, guid: 5e2e48fd53cd8154293a68debb826af3, type: 3}
   m_AccelerationSoundClip: {fileID: 8300000, guid: 61ca427854fb8cf4e98e1e914f3a560a, type: 3}
   m_MinPitch: 0.39
@@ -307,7 +307,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: d868603a4d1bb374486fe97d61103eb8, type: 3}
   m_CollisionSoundVolume: 0.386
   m_TankTopRotationSoundClip: {fileID: 8300000, guid: 69994bc763691b44cb92c83b2816e81d, type: 3}
-  m_TankTopRotationVolume: 0.26
+  m_TankTopRotationVolume: 0.537
   m_TankTopFadeSpeed: 3.6000001
   m_BulletPrefab: {fileID: 4380812528267677971, guid: fda4cf27c94cb9f459ae375de882e03e, type: 3}
   m_BulletSpawnPoint: {fileID: 4308170601247984889}
@@ -358,9 +358,10 @@ MonoBehaviour:
   m_InputSteer: 0
   m_SpeedForce: 200
   m_TireTracks: {fileID: 5057899167434053767, guid: e3e316b6b32e0dd498ebc3fb2003f777, type: 3}
-  m_TireMarkPoint: {fileID: 4328520295589983419}
-  m_TireTrackSoundClip: {fileID: 8300000, guid: c45a8ea49bf6f484dbcbe934fb68cd5d, type: 3}
-  m_TireTrackSoundVolume: 0.451
+  m_T_TireMarkPoint: {fileID: 4328520295589983419}
+  m_TireTrackLoopSoundClip: {fileID: 8300000, guid: eb98fe7603406ad49ac6697a79d35917, type: 3}
+  m_TireTrackMaxVolume: 0.7
+  m_TireTrackFadeSpeed: 2
 --- !u!70 &1336818291986090925
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
