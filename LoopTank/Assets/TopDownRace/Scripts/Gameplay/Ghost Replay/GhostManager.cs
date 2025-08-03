@@ -153,7 +153,7 @@ public class GhostManager : MonoBehaviour
         // Ab jetzt immer Ghosts erzeugen
         if (toReplay != null)
         {
-            StartCoroutine(SpawnAndActivateGhostDelayed(Clone(toReplay), 1f));
+            StartCoroutine(SpawnAndActivateGhostDelayed(Clone(toReplay), 0.5f));
         }
     }
 
