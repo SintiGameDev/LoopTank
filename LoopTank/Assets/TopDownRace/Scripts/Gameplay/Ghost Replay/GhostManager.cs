@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class GhostManager : MonoBehaviour
 {
@@ -28,7 +28,7 @@ public class GhostManager : MonoBehaviour
     public GhostMode mode = GhostMode.LastLap;
 
     [Header("Limits")]
-    public int maxGhosts = 2; // <-- Hier die maximale Anzahl definieren
+    public int maxGhosts = 2; // Maximale Anzahl definieren
 
     LapData lastLap;
     LapData bestLap;
@@ -36,52 +36,15 @@ public class GhostManager : MonoBehaviour
     // Liste ALLER Ghost-Instanzen
     private List<GhostReplay> ghostInstances = new List<GhostReplay>();
 
-    //Timer
+    // Timer
     public Timer roundTimer; // Im Inspector zuweisen!
     private bool timerStarted = false; // Merkt, ob der Timer schon gestartet wurde
     private bool timerUiShown = true; // Verhindert mehrfaches Anzeigen der UI
-
 
     // Call vom Renn-Controller am Start/Ziellinie:
     public void OnLapStarted()
     {
         playerRecorder.BeginLap();
-
-        //if (roundTimer == null)
-        //{//find timer automatically if not set
-        //    //roundTimer = GameObject.FindGameObjectsWithTag("Timer");
-        //    //// Replace this line:
-        //    //roundTimer = GameObject.FindGameObjectsWithTag("Timer");
-
-        //    // With the following corrected code:
-        //    GameObject timerObject = GameObject.FindGameObjectWithTag("Timer");
-        //    if (timerObject != null)
-        //    {
-        //        roundTimer = timerObject.GetComponent<Timer>();
-        //        if (roundTimer == null)
-        //        {
-        //            Debug.LogError("GhostManager: The object with tag 'Timer' does not have a Timer component.");
-        //        }
-        //    }
-        //    else
-        //    {
-        //        Debug.LogError("GhostManager: No GameObject with tag 'Timer' found!");
-        //    }
-        //    if (roundTimer == null)
-        //    {
-        //        Debug.LogError("GhostManager: No Timer found! Please assign a Timer in the Inspector or ensure one exists in the scene.");
-        //        return;
-        //    }
-        //}
-        //// TIMER NUR BEI ERSTER RUNDE STARTEN
-        ////if (!timerStarted && roundTimer != null)
-        //    if (!timerStarted && roundTimer != null)
-        //    {
-        //    Debug.Log("GhostManager: Starting round timer.");
-        //    roundTimer.StartTimer();
-        //    timerStarted = true;
-        //    timerUiShown = false; // falls z.B. Reset erlaubt ist
-        //}
 
         LapData toReplay = null;
         if (mode == GhostMode.LastLap) toReplay = lastLap;
@@ -103,6 +66,14 @@ public class GhostManager : MonoBehaviour
             var ghost = go.GetComponent<GhostReplay>();
             ghost.Play(ghostLap);
 
+            // CollisionIgnorer-Kind suchen (rekursiv) und für 5 Sekunden aktivieren
+            var collisionIgnorer = FindDeepChild(go.transform, "CollisionIgnorer");
+            if (collisionIgnorer != null)
+            {
+                collisionIgnorer.gameObject.SetActive(true);
+                StartCoroutine(DisableAfterSeconds(collisionIgnorer.gameObject, 5f));
+            }
+
             // In Liste aufnehmen
             ghostInstances.Add(ghost);
 
@@ -115,6 +86,35 @@ public class GhostManager : MonoBehaviour
         }
     }
 
+    // Coroutine zum späteren Deaktivieren des Kindobjekts
+    private IEnumerator DisableAfterSeconds(GameObject obj, float seconds)
+    {
+        yield return new WaitForSeconds(seconds);
+        if (obj != null)
+            obj.SetActive(false);
+        // Fix for CS1061 and CS0118 errors
+
+        // Replace the following incorrect line in the DisableAfterSeconds method:
+        // obj.setTag(DefaultExecutionOrder = 0); // Sicherstellen, dass es nicht mehr aktiv ist
+
+        // With the corrected line:
+        obj.tag = "Untagged"; // Sicherstellen, dass es nicht mehr aktiv ist
+       // obj.setTag(DefaultExecutionOrder = 0); // Sicherstellen, dass es nicht mehr aktiv ist
+    }
+
+    // Rekursive Suche nach einem Kindobjekt mit Namen
+    private Transform FindDeepChild(Transform parent, string name)
+    {
+        foreach (Transform child in parent)
+        {
+            if (child.name == name)
+                return child;
+            var result = FindDeepChild(child, name);
+            if (result != null)
+                return result;
+        }
+        return null;
+    }
 
     // Call am Rundenende:
     public void OnLapFinished(float lapTime)
