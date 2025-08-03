@@ -71,17 +71,23 @@ public class GhostManager : MonoBehaviour
 
         // Sprite-Kind suchen und erstmal deaktivieren (für sicheres Blinken)
         //var spriteTf = go.transform.Find("SpriteRenderer");
-        var spriteTf = GetComponent<SpriteRenderer>();
-        GameObject spriteObj = spriteTf ? spriteTf.gameObject : null;
-        if (spriteObj != null)
-            spriteObj.SetActive(false);
+        //var spriteTf = GetComponent<SpriteRenderer>();
+        //var spriteTf = ghost.GetComponentInChildren<SpriteRenderer>(); //funzt für oben
+        var spriteTf = ghost.GetComponentsInChildren<SpriteRenderer>();
+        foreach (var item in spriteTf)
+        {
+            GameObject spriteObj = item ? item.gameObject : null;
+            if (spriteObj != null)
+                spriteObj.SetActive(true);
+        }
+
 
         // CollisionIgnorer-Kind suchen (rekursiv) und für 5 Sekunden aktivieren
         var collisionIgnorer = FindDeepChild(go.transform, "CollisionIgnorer");
         if (collisionIgnorer != null)
         {
             collisionIgnorer.gameObject.SetActive(true);
-            StartCoroutine(DisableAfterSeconds(collisionIgnorer.gameObject, 2f));
+            StartCoroutine(DisableAfterSeconds(collisionIgnorer.gameObject, 2f, ghost));
         }
 
         // In Liste aufnehmen (optional: kann auch erst nach Play passieren)
@@ -101,35 +107,48 @@ public class GhostManager : MonoBehaviour
         if (ghost != null)
             ghost.Play(ghostLap);
 
-        //SpriteRenderer holen
-        SpriteRenderer spriteRenderer = spriteObj ? spriteObj.GetComponent<SpriteRenderer>() : null;
-        if (spriteRenderer != null)
+        foreach (var item in spriteTf)
         {
-            // Farbe auf transparent setzen, damit es nicht sofort sichtbar ist
-            spriteRenderer.color = new Color(1f, 1f, 1f, 0f);
-            // Dann kurz sichtbar machen
-            StartCoroutine(BlinkSprite(spriteObj));
+            //GameObject spriteObj = item ? item.gameObject : null;
+            ////SpriteRenderer holen
+            //SpriteRenderer spriteRenderer = item ? item.GetComponent<SpriteRenderer>() : null;
+            //if (spriteRenderer != null)
+            //{
+            //    // Farbe auf transparent setzen, damit es nicht sofort sichtbar ist
+            //    spriteRenderer.color = new Color(1f, 1f, 1f, 0f);
+            //    // Dann kurz sichtbar machen
+            //    StartCoroutine(BlinkSprite(spriteRenderer.sprite));
+            //}
+
+            //// Das Sprite kurz blinken lassen
+            //if (item != null)
+            //{
+            //    spriteRenderer.SetActive(true);
+            //    this.gameObject.SetOpacity(0.5f); // Ghost-Objekt unsichtbar machen
+            //    yield return new WaitForSeconds(0.1f); // 0.1 Sekunden sichtbar
+            //    this.gameObject.SetOpacity(1f); // Ghost-Objekt unsichtbar machen
+            //    spriteRenderer.SetActive(false);
+            //}
         }
 
-        // Das Sprite kurz blinken lassen
-        if (spriteObj != null)
-        {
-            spriteObj.SetActive(true);
-            this.gameObject.SetOpacity(0.5f); // Ghost-Objekt unsichtbar machen
-            yield return new WaitForSeconds(0.1f); // 0.1 Sekunden sichtbar
-            this.gameObject.SetOpacity(1f); // Ghost-Objekt unsichtbar machen
-            spriteObj.SetActive(false);
-        }
     }
 
     // Coroutine zum späteren Deaktivieren des Kindobjekts
-    private IEnumerator DisableAfterSeconds(GameObject obj, float seconds)
+    private IEnumerator DisableAfterSeconds(GameObject obj, float seconds, GhostReplay ghost)
     {
         yield return new WaitForSeconds(seconds);
         if (obj != null)
         {
-            obj.SetActive(false);
+            obj.SetActive(false); //ehemals false
             obj.tag = "Untagged"; // Sicherstellen, dass es nicht mehr als Ignorer erkannt wird
+
+            var spriteTf = ghost.GetComponentsInChildren<SpriteRenderer>();
+            foreach (var item in spriteTf)
+            {
+                GameObject spriteObj = item ? item.gameObject : null;
+                if (spriteObj != null)
+                    spriteObj.SetActive(true);
+            }
         }
     }
 
