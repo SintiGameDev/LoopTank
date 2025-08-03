@@ -33,18 +33,25 @@ namespace TopDownRace
 
         [HideInInspector]
         public bool m_StartRace;
+        public static bool m_restartGame;
 
         private void Awake()
         {
+            // Fix for CS1002: Added missing semicolon at the end of the statement.
+            GhostManager.Instance.ClearAllGhosts();
+
+            // Fix for CS0120: Changed the call to use the instance of GhostManager instead of treating it as a static method.
             m_LostRace = false;
             m_WonRace = false;
             m_StartRace = false;
             m_FinishedLaps = 0;
             m_Current = this;
+            m_restartGame = true;
         }
         // Start is called before the first frame update
         void Start()
         {
+           
             m_Cars = new GameObject[4];
 
             // Player spawnen
@@ -68,7 +75,7 @@ namespace TopDownRace
             {
                 if(m_RivalCarPrefab == null)
                 {
-                    Debug.LogError("Rival Car Prefab is not assigned in GameControl!");
+                    //Debug.LogError("Rival Car Prefab is not assigned in GameControl!");
                     //return;
                     continue;
                 }
@@ -158,6 +165,7 @@ namespace TopDownRace
             StartLapTimer();
             // Falls du OnLapStarted noch nicht in Start() aufgerufen hast, dann hier:
             // GhostManager.Instance.OnLapStarted();
+            
         }
 
 

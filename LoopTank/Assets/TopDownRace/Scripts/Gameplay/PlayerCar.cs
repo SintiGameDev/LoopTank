@@ -155,12 +155,14 @@ namespace TopDownRace
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if (collision.CompareTag("Ghost") && m_CollisionsIgnored == false)
+            if (collision.CompareTag("Ghost") && m_CollisionsIgnored == false )
             {
                 Debug.Log("Kollision mit Ghost! Kontrolle deaktiviert und Spiel verloren.");
                 m_Control = false;
-                Time.timeScale = 0f;
+                //Time.timeScale = 0f;
                 UISystem.ShowUI("lose-ui");
+
+                GhostManager.Instance.ClearAllGhosts();
 
                 // Alle Motorengeräusche stoppen bei Spielverlust
                 if (m_EngineAudioSource != null && m_EngineAudioSource.isPlaying)
