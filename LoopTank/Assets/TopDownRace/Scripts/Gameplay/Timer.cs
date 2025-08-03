@@ -2,7 +2,7 @@ using System.Collections; // Notwendig für Coroutinen
 using TMPro; // Wichtig: Füge dies hinzu, wenn du TextMeshPro verwendest!
 using TopDownRace;
 using UnityEngine;
-             // Wenn du den alten UI.Text verwendest, nimm: using UnityEngine.UI;
+// Wenn du den alten UI.Text verwendest, nimm: using UnityEngine.UI;
 
 public class Timer : MonoBehaviour
 {
@@ -18,10 +18,12 @@ public class Timer : MonoBehaviour
     // NEU: Referenz auf das UI-Text-Element
     private TextMeshProUGUI timerTextUI; // Ändere dies zu 'Text timerTextUI;', wenn du UnityEngine.UI.Text verwendest
 
+    // NEU: Aktuelle verbleibende Zeit des Timers
+    private float m_CurrentTime;
+
     void Awake()
     {
         // Finde das UI-Text-Element mit dem Tag "Timer"
-        // Es ist wichtig, dass dieses GameObject in deiner Szene existiert und den korrekten Tag hat.
         GameObject timerTextObject = GameObject.FindWithTag("Timer");
         if (timerTextObject != null)
         {
@@ -31,8 +33,11 @@ public class Timer : MonoBehaviour
             {
                 Debug.LogError("GameObject mit Tag 'Timer' gefunden, aber es hat keine TextMeshProUGUI-Komponente (oder UnityEngine.UI.Text-Komponente).", timerTextObject);
             }
-            else { 
-            timerTextUI.text = string.Format("{0:00}:{1:00}", Mathf.FloorToInt(timerDuration / 60), Mathf.FloorToInt(timerDuration % 60)); // Initiale Anzeige
+            else
+            {
+                // Initialisiere m_CurrentTime beim Start des Spiels mit der timerDuration
+                m_CurrentTime = timerDuration;
+                timerTextUI.text = string.Format("{0:00}:{1:00}", Mathf.FloorToInt(m_CurrentTime / 60), Mathf.FloorToInt(m_CurrentTime % 60)); // Initiale Anzeige
             }
         }
         else
@@ -54,11 +59,12 @@ public class Timer : MonoBehaviour
         }
 
         TimerEnd = false; // TimerEnd zurücksetzen, da der Timer neu startet
+        m_CurrentTime = timerDuration; // Setze die aktuelle Zeit auf die volle Dauer
         timerCoroutine = StartCoroutine(RunTimer()); // Starte die Coroutine
         Debug.Log($"Timer gestartet für {timerDuration} Sekunden.");
 
         // Timer-UI beim Start aktualisieren
-        UpdateTimerUI(timerDuration);
+        UpdateTimerUI(m_CurrentTime);
     }
 
     /// <summary>
@@ -66,36 +72,32 @@ public class Timer : MonoBehaviour
     /// </summary>
     private IEnumerator RunTimer()
     {
-        float currentTime = timerDuration;
-
-        while (currentTime > 0)
+        while (m_CurrentTime > 0)
         {
-            //Debug.Log($"Timer läuft: {currentTime} Sekunden verbleibend.");
             // Aktualisiere die UI in jedem Frame
-            UpdateTimerUI(currentTime);
+            UpdateTimerUI(m_CurrentTime);
 
             yield return null; // Warte einen Frame
-            currentTime -= Time.deltaTime; // Zähle die Zeit herunter
+            m_CurrentTime -= Time.deltaTime; // Zähle die Zeit herunter
         }
 
         // Timer ist beendet
-        currentTime = 0; // Sicherstellen, dass die Zeit nicht negativ wird
-        UpdateTimerUI(currentTime); // Letztes Update, um 00:00 anzuzeigen
+        m_CurrentTime = 0; // Sicherstellen, dass die Zeit nicht negativ wird
+        UpdateTimerUI(m_CurrentTime); // Letztes Update, um 00:00 anzuzeigen
         TimerEnd = true; // TimerEnd auf TRUE setzen
         Debug.Log("Timer beendet!");
         PlayerCar playerCar = PlayerCar.m_Current; // Hole die aktuelle Spieler-Auto-Instanz
-        PlayerCar.m_Current.m_Control = false;
-        //Falls "lose-ui" nicht schon gezeigt wird
-        //if (UISystem.FindOpenUIByName("lose-ui") != null) {
-           UISystem.ShowUI("win-ui");
+        if (PlayerCar.m_Current != null) // Sicherstellen, dass PlayerCar existiert
+        {
+            PlayerCar.m_Current.m_Control = false;
+        }
 
-        //}
-        
-        //GameControl.m_WonRace = true;
-        //// Replace the line causing the error:
-        //GameControl.m_WonRace = true;
+        // Falls "lose-ui" nicht schon gezeigt wird
+        // if (UISystem.FindOpenUIByName("lose-ui") != null) {
+        UISystem.ShowUI("win-ui");
 
-        // With the following code:
+        // }
+
         if (GameControl.m_Current != null)
         {
             GameControl.m_Current.m_WonRace = true;
@@ -118,8 +120,6 @@ public class Timer : MonoBehaviour
             Destroy(this.gameObject);
             return;
         }
-        // Falls du eine andere Methode hast, z.B.:
-        // if (UISystem.FindOpenUIByName("lose-ui") != null) { ... }
 
         if (timerTextUI != null)
         {
@@ -129,6 +129,17 @@ public class Timer : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Fügt dem Timer eine bestimmte Anzahl von Sekunden hinzu.
+    /// </summary>
+    /// <param name="secondsToAdd">Die Sekunden, die hinzugefügt werden sollen.</param>
+    public void AddTime(float secondsToAdd)
+    {
+        m_CurrentTime += secondsToAdd;
+        timerDuration += secondsToAdd; // Auch die Basisdauer anpassen, falls der Timer neu gestartet wird
+        Debug.Log($"Timer: {secondsToAdd} Sekunden hinzugefügt. Neue Zeit: {m_CurrentTime:F2}s");
+        UpdateTimerUI(m_CurrentTime); // UI sofort aktualisieren
+    }
 
     // Optional: Eine Methode zum manuellen Stoppen des Timers, falls benötigt
     public void StopTimer()
@@ -139,7 +150,7 @@ public class Timer : MonoBehaviour
             timerCoroutine = null;
             Debug.Log("Timer manuell gestoppt.");
             // Optional: UI auch hier aktualisieren, z.B. auf 0 oder eine Meldung
-             UpdateTimerUI(0);
+            UpdateTimerUI(0);
         }
     }
 }

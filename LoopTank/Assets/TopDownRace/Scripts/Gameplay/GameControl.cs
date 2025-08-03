@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UIElements;
+using UnityEngine.UIElements; // Beachte: UnityEngine.UIElements ist für das neue UI-Toolkit, UnityEngine.UI für das alte.
 
 namespace TopDownRace
 {
     public class GameControl : MonoBehaviour
     {
-
         public int m_levelRounds;
         [HideInInspector]
         public int m_FinishedLaps;
@@ -43,10 +42,8 @@ namespace TopDownRace
 
         private void Awake()
         {
-            // Fix for CS1002: Added missing semicolon at the end of the statement.
             GhostManager.Instance.ClearAllGhosts();
 
-            // Fix for CS0120: Changed the call to use the instance of GhostManager instead of treating it as a static method.
             m_LostRace = false;
             m_WonRace = false;
             m_StartRace = false;
@@ -57,7 +54,6 @@ namespace TopDownRace
         // Start is called before the first frame update
         void Start()
         {
-           
             m_Cars = new GameObject[4];
 
             // Player spawnen
@@ -79,10 +75,8 @@ namespace TopDownRace
             // Rivals spawnen (unverändert)
             for (int i = 1; i < 4; i++)
             {
-                if(m_RivalCarPrefab == null)
+                if (m_RivalCarPrefab == null)
                 {
-                    //Debug.LogError("Rival Car Prefab is not assigned in GameControl!");
-                    //return;
                     continue;
                 }
                 GameObject rivalCar = Instantiate(m_RivalCarPrefab);
@@ -111,7 +105,7 @@ namespace TopDownRace
             }
             for (int i = 1; i < 4; i++)
             {
-                if(m_Cars[i] == null || m_Cars[i].GetComponent<Rivals>() == null) continue;
+                if (m_Cars[i] == null || m_Cars[i].GetComponent<Rivals>() == null) continue;
                 int rivalPoint = m_Cars[i].GetComponent<Rivals>().m_FinishedLaps * RaceTrackControl.m_Main.m_Checkpoints.Length + m_Cars[i].GetComponent<Rivals>().m_WaypointsCounter;
                 if (playerPoint < rivalPoint)
                 {
@@ -124,6 +118,17 @@ namespace TopDownRace
 
         public bool PlayerLapEndCheck()
         {
+            // NEU: 15 Sekunden zum Timer hinzufügen, wenn eine Runde beendet wurde
+            // Dies geschieht, bevor geprüft wird, ob das Rennen gewonnen ist.
+            if (roundTimer != null)
+            {
+                roundTimer.AddTime(15f); // Füge 15 Sekunden hinzu
+            }
+            else
+            {
+                Debug.LogWarning("GameControl: roundTimer ist nicht zugewiesen oder gefunden. Kann keine Zeit hinzufügen.");
+            }
+
             if (m_FinishedLaps == m_levelRounds)
             {
                 if (!m_LostRace)
@@ -131,15 +136,21 @@ namespace TopDownRace
                     PlayerCar.m_Current.m_Control = false;
                     UISystem.ShowUI("win-ui");
                     m_WonRace = true;
-
                 }
                 else
                 {
                     PlayerCar.m_Current.m_Control = false;
                     UISystem.ShowUI("lose-ui");
-                    //Finde Objekt mit dem Tag "Score" und setze den Text auf  m_FinishedLaps
+                    // Finde Objekt mit dem Tag "Score" und setze den Text auf m_FinishedLaps
                     var scoreText = GameObject.FindGameObjectsWithTag("Score");
-                    scoreText[0].GetComponent<UnityEngine.UI.Text>().text = m_FinishedLaps.ToString();
+                    if (scoreText.Length > 0 && scoreText[0].GetComponent<UnityEngine.UI.Text>() != null)
+                    {
+                        scoreText[0].GetComponent<UnityEngine.UI.Text>().text = m_FinishedLaps.ToString();
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Score-Text-Objekt mit Tag 'Score' nicht gefunden oder hat keine UnityEngine.UI.Text-Komponente.");
+                    }
                 }
                 return true;
             }
@@ -175,64 +186,50 @@ namespace TopDownRace
             // ➜ Hier den GhostManager informieren, dass die Runde begonnen hat:
 
             if (roundTimer == null)
-            {//find timer automatically if not set
-             //roundTimer = GameObject.FindGameObjectsWithTag("Timer");
-             //// Replace this line:
-             //roundTimer = GameObject.FindGameObjectsWithTag("Timer");
-
-                // With the following corrected code:
+            {
+                //find timer automatically if not set
                 GameObject timerObject = GameObject.FindGameObjectWithTag("Timer");
                 if (timerObject != null)
                 {
                     roundTimer = timerObject.GetComponent<Timer>();
                     if (roundTimer == null)
                     {
-                        Debug.LogError("GhostManager: The object with tag 'Timer' does not have a Timer component.");
+                        Debug.LogError("GameControl: The object with tag 'Timer' does not have a Timer component.");
                     }
                 }
                 else
                 {
-                    Debug.LogError("GhostManager: No GameObject with tag 'Timer' found!");
+                    Debug.LogError("GameControl: No GameObject with tag 'Timer' found!");
                 }
                 if (roundTimer == null)
                 {
-                    Debug.LogError("GhostManager: No Timer found! Please assign a Timer in the Inspector or ensure one exists in the scene.");
-                    
-                    //return;
+                    Debug.LogError("GameControl: No Timer found! Please assign a Timer in the Inspector or ensure one exists in the scene.");
                     yield break; // Ensure we exit the coroutine if no timer is found
                 }
             }
             // TIMER NUR BEI ERSTER RUNDE STARTEN
-            //if (!timerStarted && roundTimer != null)
             if (!timerStarted && roundTimer != null)
             {
-                Debug.Log("GhostManager: Starting round timer.");
+                Debug.Log("GameControl: Starting round timer.");
                 roundTimer.StartTimer();
                 timerStarted = true;
                 timerUiShown = false; // falls z.B. Reset erlaubt ist
             }
-            // Falls du OnLapStarted noch nicht in Start() aufgerufen hast, dann hier:
-            // GhostManager.Instance.OnLapStarted();
-
         }
-
-
 
         ///----------------Gemini-------------------
 
-
         private float m_LapStartTime;
 
-            public float GetCurrentLapTime()
-            {
-                return Time.time - m_LapStartTime;
-            }
+        public float GetCurrentLapTime()
+        {
+            return Time.time - m_LapStartTime;
+        }
 
-            // Rufe das beim Start einer neuen Runde auf:
-            public void StartLapTimer()
-            {
-                m_LapStartTime = Time.time;
-            }
-        
+        // Rufe das beim Start einer neuen Runde auf:
+        public void StartLapTimer()
+        {
+            m_LapStartTime = Time.time;
+        }
     }
 }
