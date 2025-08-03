@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class GhostManager : MonoBehaviour
 {
@@ -35,10 +36,24 @@ public class GhostManager : MonoBehaviour
     // Liste ALLER Ghost-Instanzen
     private List<GhostReplay> ghostInstances = new List<GhostReplay>();
 
+    //Timer
+    public Timer roundTimer; // Im Inspector zuweisen!
+    private bool timerStarted = false; // Merkt, ob der Timer schon gestartet wurde
+    private bool timerUiShown = false; // Verhindert mehrfaches Anzeigen der UI
+
+
     // Call vom Renn-Controller am Start/Ziellinie:
     public void OnLapStarted()
     {
         playerRecorder.BeginLap();
+
+        // TIMER NUR BEI ERSTER RUNDE STARTEN
+        if (!timerStarted && roundTimer != null)
+        {
+            roundTimer.StartTimer();
+            timerStarted = true;
+            timerUiShown = false; // falls z.B. Reset erlaubt ist
+        }
 
         LapData toReplay = null;
         if (mode == GhostMode.LastLap) toReplay = lastLap;

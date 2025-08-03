@@ -69,7 +69,8 @@ namespace TopDownRace
                 if(m_RivalCarPrefab == null)
                 {
                     Debug.LogError("Rival Car Prefab is not assigned in GameControl!");
-                    return;
+                    //return;
+                    continue;
                 }
                 GameObject rivalCar = Instantiate(m_RivalCarPrefab);
                 rivalCar.transform.position = RaceTrackControl.m_Main.m_StartPositions[i].position;
@@ -86,9 +87,18 @@ namespace TopDownRace
         void Update()
         {
             int position = 0;
-            int playerPoint = m_FinishedLaps * RaceTrackControl.m_Main.m_Checkpoints.Length + PlayerCar.m_Current.m_CurrentCheckpoint;
+            int playerPoint = 0;
+            if (RaceTrackControl.m_Main == null || RaceTrackControl.m_Main.m_Checkpoints == null || RaceTrackControl.m_Main.m_Checkpoints.Length == 0)
+            {
+                playerPoint = 1000; // Default Wert, falls keine Checkpoints definiert sind
+            }
+            else
+            {
+                playerPoint = m_FinishedLaps * RaceTrackControl.m_Main.m_Checkpoints.Length + PlayerCar.m_Current.m_CurrentCheckpoint;
+            }
             for (int i = 1; i < 4; i++)
             {
+                if(m_Cars[i] == null || m_Cars[i].GetComponent<Rivals>() == null) continue;
                 int rivalPoint = m_Cars[i].GetComponent<Rivals>().m_FinishedLaps * RaceTrackControl.m_Main.m_Checkpoints.Length + m_Cars[i].GetComponent<Rivals>().m_WaypointsCounter;
                 if (playerPoint < rivalPoint)
                 {
