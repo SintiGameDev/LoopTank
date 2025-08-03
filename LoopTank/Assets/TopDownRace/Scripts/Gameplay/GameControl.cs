@@ -137,6 +137,9 @@ namespace TopDownRace
                 {
                     PlayerCar.m_Current.m_Control = false;
                     UISystem.ShowUI("lose-ui");
+                    //Finde Objekt mit dem Tag "Score" und setze den Text auf  m_FinishedLaps
+                    var scoreText = GameObject.FindGameObjectsWithTag("Score");
+                    scoreText[0].GetComponent<UnityEngine.UI.Text>().text = m_FinishedLaps.ToString();
                 }
                 return true;
             }

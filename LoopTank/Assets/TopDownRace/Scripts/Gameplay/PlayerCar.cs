@@ -234,6 +234,14 @@ namespace TopDownRace
                 m_Control = false;
                 UISystem.ShowUI("lose-ui");
 
+                //Finde Objekt mit dem Tag "Score" und setze den Text auf  m_FinishedLaps
+                var scoreText = GameObject.FindGameObjectsWithTag("Score");
+                //scoreText[0].GetComponent<UnityEngine.UI.Text>().text = GameControl.m_FinishedLaps.ToString();
+                //// Replace the following line:
+                //scoreText[0].GetComponent<UnityEngine.UI.Text>().text = GameControl.m_FinishedLaps.ToString();
+
+                // With this corrected line:
+                scoreText[0].GetComponent<UnityEngine.UI.Text>().text = GameControl.m_Current.m_FinishedLaps.ToString();
                 GhostManager.Instance.ClearAllGhosts();
 
                 if (m_EngineAudioSource != null && m_EngineAudioSource.isPlaying)

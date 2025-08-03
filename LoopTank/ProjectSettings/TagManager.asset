@@ -12,6 +12,7 @@ TagManager:
   - Timer
   - TankBody
   - Bullet
+  - Score
   layers:
   - Default
   - TransparentFX
