@@ -50,41 +50,52 @@ public class GhostManager : MonoBehaviour
         if (mode == GhostMode.LastLap) toReplay = lastLap;
         else if (mode == GhostMode.BestLap) toReplay = bestLap;
 
-        // Nur wenn wir wirklich eine gespeicherte Runde haben
         if (toReplay != null)
         {
-            // *** KLONE genau das LapData-Objekt, das dieser Ghost wiederholen soll! ***
-            LapData ghostLap = Clone(toReplay);
-
-            // Neue Ghost-Instanz erzeugen
-            var go = Instantiate(
-                ghostPrefab,
-                playerRecorder.transform.position,
-                playerRecorder.transform.rotation,
-                ghostParent // kann null sein
-            );
-            var ghost = go.GetComponent<GhostReplay>();
-            ghost.Play(ghostLap);
-
-            // CollisionIgnorer-Kind suchen (rekursiv) und für 5 Sekunden aktivieren
-            var collisionIgnorer = FindDeepChild(go.transform, "CollisionIgnorer");
-            if (collisionIgnorer != null)
-            {
-                collisionIgnorer.gameObject.SetActive(true);
-                StartCoroutine(DisableAfterSeconds(collisionIgnorer.gameObject, 5f));
-            }
-
-            // In Liste aufnehmen
-            ghostInstances.Add(ghost);
-
-            // Maximale Anzahl beachten: älteste löschen
-            if (ghostInstances.Count > maxGhosts)
-            {
-                Destroy(ghostInstances[0].gameObject);
-                ghostInstances.RemoveAt(0);
-            }
+            // Ghost nach 5 Sekunden verzögert starten:
+            StartCoroutine(SpawnAndActivateGhostDelayed(Clone(toReplay), 5f));
         }
     }
+
+    // Die Coroutine, die den Ghost nach delaySeconds startet
+    private IEnumerator SpawnAndActivateGhostDelayed(LapData ghostLap, float delaySeconds)
+    {
+        // Ghost-Objekt direkt instanziieren (sichtbar, aber bewegt sich noch nicht)
+        var go = Instantiate(
+            ghostPrefab,
+            playerRecorder.transform.position,
+            playerRecorder.transform.rotation,
+            ghostParent // kann null sein
+        );
+        var ghost = go.GetComponent<GhostReplay>();
+        // NICHT sofort ghost.Play(ghostLap);
+
+        // CollisionIgnorer-Kind suchen (rekursiv) und für 5 Sekunden aktivieren
+        var collisionIgnorer = FindDeepChild(go.transform, "CollisionIgnorer");
+        if (collisionIgnorer != null)
+        {
+            collisionIgnorer.gameObject.SetActive(true);
+            StartCoroutine(DisableAfterSeconds(collisionIgnorer.gameObject, 5f));
+        }
+
+        // In Liste aufnehmen (optional: kann auch erst nach Play passieren)
+        ghostInstances.Add(ghost);
+
+        // Maximale Anzahl beachten: älteste löschen
+        if (ghostInstances.Count > maxGhosts)
+        {
+            Destroy(ghostInstances[0].gameObject);
+            ghostInstances.RemoveAt(0);
+        }
+
+        // Jetzt erst warten!
+        yield return new WaitForSeconds(delaySeconds);
+
+        // Jetzt die Ghost-Bewegung starten!
+        if (ghost != null)
+            ghost.Play(ghostLap);
+    }
+
 
     // Coroutine zum späteren Deaktivieren des Kindobjekts
     private IEnumerator DisableAfterSeconds(GameObject obj, float seconds)
