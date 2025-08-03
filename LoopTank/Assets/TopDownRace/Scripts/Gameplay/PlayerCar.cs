@@ -61,6 +61,34 @@ namespace TopDownRace
         private AudioSource m_CollisionAudioSource; // Eine separate AudioSource für Kollisionssounds
         // ------------------------------------------
 
+        // --- NEUE VARIABLEN FÜR TANKTOP-DREH-SOUND ---
+        [Tooltip("Das Soundfile, das abgespielt wird, wenn der TankTop gedreht wird.")]
+        public AudioClip m_TankTopRotationSoundClip;
+        [Tooltip("Die Lautstärke des TankTop-Rotationssounds.")]
+        [Range(0.0f, 1.0f)]
+        public float m_TankTopRotationVolume = 0.8f;
+        [Tooltip("Die Geschwindigkeit, mit der der TankTop-Rotationssound ein-/ausblendet.")]
+        [Range(0.1f, 5.0f)]
+        public float m_TankTopFadeSpeed = 2.0f;
+
+        private AudioSource m_TankTopRotationAudioSource; // Eigene AudioSource für den TankTop-Sound
+        // ---------------------------------------------
+
+        // --- NEUE VARIABLEN FÜR SCHUSSFUNKTION ---
+        [Tooltip("Das Prefab der Kugel, die abgefeuert werden soll.")]
+        public GameObject m_BulletPrefab;
+        [Tooltip("Der Punkt, von dem aus die Kugel gespawnt wird (z.B. die Mündung des Geschützturms).")]
+        public Transform m_BulletSpawnPoint;
+        [Tooltip("Die Geschwindigkeit, mit der die Kugel fliegt.")]
+        public float m_BulletSpeed = 15f;
+        [Tooltip("Die Zeit in Sekunden, nach der die Kugel zerstört wird.")]
+        public float m_BulletLifetime = 3f;
+        [Tooltip("Der Soundeffekt, der beim Abfeuern der Kugel abgespielt wird.")]
+        public AudioClip m_ShootSoundClip;
+
+        private AudioSource m_ShootAudioSource; // Eigene AudioSource für den Schuss-Sound
+        // -----------------------------------------
+
         private CarPhysics m_CarPhysics; // Referenz auf die CarPhysics-Komponente, um die Geschwindigkeit zu erhalten
 
         private Transform m_TankTop;
@@ -84,6 +112,23 @@ namespace TopDownRace
             {
                 Debug.LogError("TankTop-Objekt nicht gefunden! Stelle sicher, dass ein Kindobjekt mit dem Namen 'TankTop' existiert.", this);
             }
+            // Stelle sicher, dass ein BulletSpawnPoint zugewiesen ist, wenn der TankTop existiert
+            if (m_TankTop != null && m_BulletSpawnPoint == null)
+            {
+                // Versuche, einen 'Muzzle' oder 'BarrelEnd' als Kind des TankTops zu finden
+                m_BulletSpawnPoint = m_TankTop.Find("Muzzle");
+                if (m_BulletSpawnPoint == null)
+                {
+                    m_BulletSpawnPoint = m_TankTop.Find("BarrelEnd");
+                }
+
+                if (m_BulletSpawnPoint == null)
+                {
+                    Debug.LogWarning("Kein spezifischer BulletSpawnPoint zugewiesen oder als Kind des TankTops gefunden (versucht 'Muzzle' oder 'BarrelEnd'). Die Kugel wird direkt vom TankTop gespawnt. Erstelle einen leeren GameObject-Child am Ende deiner Kanone und weise ihn zu.", this);
+                    m_BulletSpawnPoint = m_TankTop; // Fallback: Spawnt direkt vom TankTop
+                }
+            }
+
 
             // Stelle sicher, dass ein Rigidbody2D vorhanden ist
             if (GetComponent<Rigidbody2D>() == null)
@@ -137,13 +182,37 @@ namespace TopDownRace
                 Debug.LogWarning("Kein BESCHLEUNIGUNGS-Sound-Clip zugewiesen! Bitte weise einen im Inspector zu.", this);
             }
 
-            // --- NEU: Initialisierung der KOLLISIONSSOUND-AudioSource ---
+            // --- Initialisierung der KOLLISIONSSOUND-AudioSource ---
             // Eine DRITTE AudioSource, die nicht looped
             m_CollisionAudioSource = gameObject.AddComponent<AudioSource>();
             m_CollisionAudioSource.loop = false; // Kollisionssounds sollen nicht wiederholt werden
             m_CollisionAudioSource.playOnAwake = false; // Wir spielen sie manuell ab
             m_CollisionAudioSource.volume = m_CollisionSoundVolume; // Setzt die Lautstärke
-            // -------------------------------------------------------------
+
+            // --- Initialisierung der TANKTOP-ROTATIONS-AudioSource ---
+            // Eine VIERTE AudioSource, die looped, aber deren Lautstärke gesteuert wird
+            m_TankTopRotationAudioSource = gameObject.AddComponent<AudioSource>();
+            if (m_TankTopRotationSoundClip != null)
+            {
+                m_TankTopRotationAudioSource.clip = m_TankTopRotationSoundClip;
+                m_TankTopRotationAudioSource.loop = true; // Dieser Sound looped
+                m_TankTopRotationAudioSource.playOnAwake = false;
+                m_TankTopRotationAudioSource.volume = 0.0f; // Startet leise und wird bei Bewegung eingeblendet
+
+                m_TankTopRotationAudioSource.Play(); // Beginnt den Loop, aber stumm
+            }
+            else
+            {
+                Debug.LogWarning("Kein TankTop-Rotations-Sound-Clip zugewiesen! Bitte weise einen im Inspector zu.", this);
+            }
+
+            // --- Initialisierung der Schuss-AudioSource ---
+            // Eine FÜNFTE AudioSource für den Schuss-Sound
+            m_ShootAudioSource = gameObject.AddComponent<AudioSource>();
+            m_ShootAudioSource.loop = false;
+            m_ShootAudioSource.playOnAwake = false;
+            m_ShootAudioSource.volume = 1.0f; // Standardlautstärke, kann angepasst werden
+            // ---------------------------------------------------
 
             // --- Referenz zur CarPhysics-Komponente holen ---
             m_CarPhysics = GetComponent<CarPhysics>();
@@ -152,6 +221,7 @@ namespace TopDownRace
                 Debug.LogError("CarPhysics-Komponente nicht gefunden! Kann Geschwindigkeit nicht anpassen.", this);
             }
         }
+
         private void OnTriggerEnter2D(Collider2D collision)
         {
             if (
@@ -171,6 +241,13 @@ namespace TopDownRace
 
                 if (m_AccelerationAudioSource != null && m_AccelerationAudioSource.isPlaying)
                     m_AccelerationAudioSource.Stop();
+
+                if (m_TankTopRotationAudioSource != null && m_TankTopRotationAudioSource.isPlaying)
+                    m_TankTopRotationAudioSource.Stop();
+
+                // NEU: Schuss-Sound auch stoppen bei Spielverlust, falls er gerade abgespielt wird
+                if (m_ShootAudioSource != null && m_ShootAudioSource.isPlaying)
+                    m_ShootAudioSource.Stop();
             }
         }
 
@@ -185,23 +262,15 @@ namespace TopDownRace
             return false;
         }
 
-
-        // --- NEUE METHODE FÜR PHYSISCHE KOLLISIONEN ---
-        // OnCollisionEnter2D wird aufgerufen, wenn dieser Collider2D beginnt, einen anderen 2D-Collider zu berühren.
         private void OnCollisionEnter2D(Collision2D collision)
         {
-            // Überprüfe, ob Kollisionssounds zugewiesen sind und die AudioSource bereit ist
             if (m_CollisionSoundClips != null && m_CollisionSoundClips.Count > 0 && m_CollisionAudioSource != null)
             {
-                // Wähle einen zufälligen Sound aus der Liste
                 int randomIndex = Random.Range(0, m_CollisionSoundClips.Count);
                 AudioClip clipToPlay = m_CollisionSoundClips[randomIndex];
-
-                // Spiele den ausgewählten Sound ab
                 m_CollisionAudioSource.PlayOneShot(clipToPlay, m_CollisionSoundVolume);
             }
         }
-        // -----------------------------------------------
 
         private void OnTriggerStay2D(Collider2D collision)
         {
@@ -221,11 +290,8 @@ namespace TopDownRace
 
         void Update()
         {
-            // Input für den gesamten Panzer (WASD)
-            float verticalInput = Input.GetAxisRaw("Vertical");    // W/S
-            float horizontalInput = Input.GetAxisRaw("Horizontal"); // A/D (für die Panzer-Drehung)
-
-            // Input NUR für den TankTop (Pfeiltasten Links/Rechts)
+            float verticalInput = Input.GetAxisRaw("Vertical");
+            float horizontalInput = Input.GetAxisRaw("Horizontal");
             float tankTopRotationInput = Input.GetAxisRaw("TankTopHorizontal");
 
             if (GameControl.m_Current != null && GameControl.m_Current.m_StartRace)
@@ -242,30 +308,94 @@ namespace TopDownRace
                     {
                         GetComponent<CarPhysics>().m_InputSteer = -horizontalInput * m_RotationSpeed;
                     }
+
+                    // NEU: Schuss-Input-Erkennung
+                    if (Input.GetKeyDown(KeyCode.Space))
+                    {
+                        ShootBullet();
+                    }
                 }
             }
 
-            // TankTop-Rotation
             if (m_TankTop != null)
             {
                 m_TankTop.Rotate(0, 0, -tankTopRotationInput * m_TankTopRotationSpeed * Time.deltaTime);
+
+                if (m_TankTopRotationAudioSource != null)
+                {
+                    if (Mathf.Abs(tankTopRotationInput) > 0.01f)
+                    {
+                        m_TankTopRotationAudioSource.volume = Mathf.MoveTowards(m_TankTopRotationAudioSource.volume, m_TankTopRotationVolume, m_TankTopFadeSpeed * Time.deltaTime);
+                    }
+                    else
+                    {
+                        m_TankTopRotationAudioSource.volume = Mathf.MoveTowards(m_TankTopRotationAudioSource.volume, 0.0f, m_TankTopFadeSpeed * Time.deltaTime);
+                    }
+                }
             }
 
-            // --- ANPASSEN VON PITCH UND VOLUME FÜR DEN BESCHLEUNIGUNGSSOUND ---
             if (m_AccelerationAudioSource != null && m_CarPhysics != null)
             {
                 float currentSpeed = m_CarPhysics.GetComponent<Rigidbody2D>().linearVelocity.magnitude;
-
                 float speedNormalized = 0f;
                 if (m_Speed > 0)
                 {
                     speedNormalized = Mathf.Clamp01(Mathf.Abs(currentSpeed) / m_Speed);
                 }
-
                 m_AccelerationAudioSource.pitch = Mathf.Lerp(m_MinPitch, m_MaxPitch, speedNormalized);
                 m_AccelerationAudioSource.volume = Mathf.Lerp(m_MinAccelerationVolume, m_MaxAccelerationVolume, speedNormalized);
             }
-            // ----------------------------------------------------------------------
+        }
+
+        void ShootBullet()
+        {
+            if (m_BulletPrefab == null)
+            {
+                Debug.LogWarning("Bullet Prefab ist nicht zugewiesen! Bitte weise ein Bullet Prefab im Inspector zu.", this);
+                return;
+            }
+
+            if (m_BulletSpawnPoint == null)
+            {
+                Debug.LogWarning("Bullet Spawn Point ist nicht zugewiesen! Die Kugel kann nicht gespawnt werden. Stelle sicher, dass du ein Child-GameObject ('Muzzle' oder 'BarrelEnd') im TankTop hast oder manuell zuweist.", this);
+                return;
+            }
+
+            // Kugel instanziieren an der Position und Rotation des BulletSpawnPoint
+            GameObject bullet = Instantiate(m_BulletPrefab, m_BulletSpawnPoint.position, m_BulletSpawnPoint.rotation);
+
+            // Holen Sie sich die Rigidbody2D-Komponente der Kugel
+            Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
+            if (rb == null)
+            {
+                Debug.LogError("Die Kugel (Bullet Prefab) benötigt eine Rigidbody2D-Komponente, um geschossen werden zu können!", bullet);
+                // Wenn kein Rigidbody2D vorhanden ist, zerstöre das gespawnte Objekt, um Unordnung zu vermeiden.
+                Destroy(bullet);
+                return;
+            }
+
+            // Setze den Tag der Kugel
+            bullet.tag = "Bullet"; // Du hast erwähnt, dass deine Bullet diesen Tag hat.
+
+            // Berechne die Schussrichtung basierend auf der Rotation des TankTops (und damit des BulletSpawnPoint)
+            // In 2D ist die "Vorwärts"-Richtung (also nach oben auf der Sprite-Achse) oft Vector2.up oder Vector2.right,
+            // je nachdem, wie dein Sprite ausgerichtet ist.
+            // transform.up ist die grüne Achse (Y-Achse) des Objekts im lokalen Raum,
+            // transform.right ist die rote Achse (X-Achse).
+            // Für einen 2D-Panzer, der sich um die Z-Achse dreht, ist `transform.up` oft die Richtung, in die der Lauf zeigt.
+            Vector2 shootDirection = m_BulletSpawnPoint.up; // Oder m_BulletSpawnPoint.right, je nach Ausrichtung deines Bullet Prefabs/Sprites
+
+            // Wende Kraft auf die Kugel an
+            rb.linearVelocity = shootDirection * m_BulletSpeed;
+
+            // Zerstöre die Kugel nach einer bestimmten Zeit, um das Spielfeld sauber zu halten
+            Destroy(bullet, m_BulletLifetime);
+
+            // Spiele den Schuss-Sound ab
+            if (m_ShootSoundClip != null && m_ShootAudioSource != null)
+            {
+                m_ShootAudioSource.PlayOneShot(m_ShootSoundClip);
+            }
         }
     }
 }
