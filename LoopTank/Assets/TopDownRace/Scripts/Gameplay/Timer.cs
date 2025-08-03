@@ -85,7 +85,12 @@ public class Timer : MonoBehaviour
         Debug.Log("Timer beendet!");
         PlayerCar playerCar = PlayerCar.m_Current; // Hole die aktuelle Spieler-Auto-Instanz
         PlayerCar.m_Current.m_Control = false;
-        UISystem.ShowUI("win-ui");
+        //Falls "lose-ui" nicht schon gezeigt wird
+        //if (UISystem.FindOpenUIByName("lose-ui") != null) {
+           UISystem.ShowUI("win-ui");
+
+        //}
+        
         //GameControl.m_WonRace = true;
         //// Replace the line causing the error:
         //GameControl.m_WonRace = true;
@@ -107,17 +112,23 @@ public class Timer : MonoBehaviour
     /// <param name="timeToDisplay">Die verbleibende Zeit in Sekunden.</param>
     private void UpdateTimerUI(float timeToDisplay)
     {
+        // Falls "lose-ui" angezeigt wird, zerstöre das Timer-Objekt
+        if (UISystem.FindOpenUIByName("lose-ui") != null)
+        {
+            Destroy(this.gameObject);
+            return;
+        }
+        // Falls du eine andere Methode hast, z.B.:
+        // if (UISystem.FindOpenUIByName("lose-ui") != null) { ... }
+
         if (timerTextUI != null)
         {
-            // Berechne Minuten und Sekunden
             int minutes = Mathf.FloorToInt(timeToDisplay / 60);
             int seconds = Mathf.FloorToInt(timeToDisplay % 60);
-
-            // Formatieren als MM:SS
             timerTextUI.text = string.Format("{0:00}:{1:00}", minutes, seconds);
-            //Debug.Log($"Timer aktualisiert: {timerTextUI.text}");
         }
     }
+
 
     // Optional: Eine Methode zum manuellen Stoppen des Timers, falls benötigt
     public void StopTimer()

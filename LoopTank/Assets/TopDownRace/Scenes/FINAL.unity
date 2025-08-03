@@ -2113,7 +2113,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 232297856918926906, guid: 883e838913eff994d871d9337c3fd2da, type: 3}
       propertyPath: timerDuration
-      value: 120
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 4567886287546106173, guid: 883e838913eff994d871d9337c3fd2da, type: 3}
       propertyPath: m_LocalPosition.x
