@@ -50,11 +50,11 @@ public class GhostManager : MonoBehaviour
         if (mode == GhostMode.LastLap) toReplay = lastLap;
         else if (mode == GhostMode.BestLap) toReplay = bestLap;
 
-        if (toReplay != null)
-        {
-            // Ghost nach 5 Sekunden verzögert starten:
-            StartCoroutine(SpawnAndActivateGhostDelayed(Clone(toReplay), 5f));
-        }
+        //if (toReplay != null)
+        //{
+        //    // Ghost nach 5 Sekunden verzögert starten:
+        //    StartCoroutine(SpawnAndActivateGhostDelayed(Clone(toReplay), 5f));
+        //}
     }
 
     // Die Coroutine, die den Ghost nach delaySeconds startet und Sprite kurz blinken lässt
@@ -70,7 +70,8 @@ public class GhostManager : MonoBehaviour
         var ghost = go.GetComponent<GhostReplay>();
 
         // Sprite-Kind suchen und erstmal deaktivieren (für sicheres Blinken)
-        var spriteTf = go.transform.Find("Sprite");
+        //var spriteTf = go.transform.Find("SpriteRenderer");
+        var spriteTf = GetComponent<SpriteRenderer>();
         GameObject spriteObj = spriteTf ? spriteTf.gameObject : null;
         if (spriteObj != null)
             spriteObj.SetActive(false);
@@ -114,7 +115,9 @@ public class GhostManager : MonoBehaviour
         if (spriteObj != null)
         {
             spriteObj.SetActive(true);
+            this.gameObject.SetOpacity(0.5f); // Ghost-Objekt unsichtbar machen
             yield return new WaitForSeconds(0.1f); // 0.1 Sekunden sichtbar
+            this.gameObject.SetOpacity(1f); // Ghost-Objekt unsichtbar machen
             spriteObj.SetActive(false);
         }
     }
@@ -149,12 +152,30 @@ public class GhostManager : MonoBehaviour
     {
         playerRecorder.EndLap(lapTime);
 
+        if(playerRecorder.currentLap == null || playerRecorder.currentLap.frames.Count < 2)
+        {
+            Debug.LogWarning("Current lap data is empty or invalid. Cannot create ghost.");
+            return;
+        }
+
         // "Letzte Runde" übernehmen
         lastLap = Clone(playerRecorder.currentLap);
 
         // "Beste Runde" updaten
         if (bestLap == null || lapTime < bestLap.lapTime)
             bestLap = Clone(playerRecorder.currentLap);
+
+        //Ghosts erst nach Runde spawnen
+        LapData toReplay = null;
+        if (mode == GhostMode.LastLap) toReplay = lastLap;
+        else if (mode == GhostMode.BestLap) toReplay = bestLap;
+
+        if (toReplay != null )
+           // if (toReplay != null && bestLap.lapTime <= 0.1f)
+            {
+            // Ghost nach 5 Sekunden verzögert starten:
+            StartCoroutine(SpawnAndActivateGhostDelayed(Clone(toReplay), 1f));
+        }
     }
 
     // Deep Copy, damit alle Ghosts unabhängig laufen
@@ -190,6 +211,8 @@ public class GhostManager : MonoBehaviour
     // Add the missing BlinkSprite method to resolve the CS0103 error.
     private IEnumerator BlinkSprite(GameObject spriteObj)
     {
+
+
         if (spriteObj == null) yield break;
 
         SpriteRenderer spriteRenderer = spriteObj.GetComponent<SpriteRenderer>();
@@ -209,4 +232,21 @@ public class GhostManager : MonoBehaviour
     }
     // Für Zugriff von außen (z.B. Anzeige)
     public IReadOnlyList<GhostReplay> ActiveGhosts => ghostInstances;
+}
+// Add this extension method to provide the missing SetOpacity functionality for GameObject.
+public static class GameObjectExtensions
+{
+    public static void SetOpacity(this GameObject gameObject, float opacity)
+    {
+        if (gameObject == null) return;
+
+        // Get all SpriteRenderer components in the GameObject and its children
+        var spriteRenderers = gameObject.GetComponentsInChildren<SpriteRenderer>();
+        foreach (var spriteRenderer in spriteRenderers)
+        {
+            var color = spriteRenderer.color;
+            color.a = opacity; // Set the alpha value
+            spriteRenderer.color = color;
+        }
+    }
 }
