@@ -25,13 +25,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2853088586134609860}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0.7081951, w: 0.70601684}
-  m_LocalPosition: {x: 1.34, y: 0.05, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: 0.0012370632, w: 0.9999993}
+  m_LocalPosition: {x: -0.54, y: 0.05, z: 0}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3225385444474873089}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -90.177}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0.142}
 --- !u!212 &4156302326443665023
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -130,7 +130,7 @@ GameObject:
   - component: {fileID: 275504697869159339}
   m_Layer: 0
   m_Name: TankBody
-  m_TagString: Untagged
+  m_TagString: TankBody
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -236,7 +236,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.7, y: 1.7, z: 1}
+  m_LocalScale: {x: 1.7, y: 1.7, z: 1.7}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1379046595138928208}
@@ -262,6 +262,7 @@ MonoBehaviour:
   m_CurrentCheckpoint: 0
   m_Control: 0
   m_RotationSpeed: 0.96
+  m_TankTopRotationSpeed: 100
 --- !u!50 &802556952416478341
 Rigidbody2D:
   serializedVersion: 5
