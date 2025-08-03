@@ -15,10 +15,9 @@ public class GhostReplay : MonoBehaviour
     public void Play(LapData lap)
     {
         source = lap;
-        if (source == null || source.frames.Count < 2) { playing = false; return; } 
+        if (source == null || source.frames.Count < 2) { playing = false; return; }
         i = 1;
         t = 0f;
-        // sofort an den ersten Frame setzen
         var f0 = source.frames[0];
         rb.position = f0.pos;
         rb.rotation = f0.rotZ;
@@ -28,10 +27,8 @@ public class GhostReplay : MonoBehaviour
 
     public void Stop()
     {
-        //Testweise aus, aber wollen wir das eigentlich haben?
-        //Debug.Log("Ghost Replay stopped");
-        //playing = false;
-        //gameObject.SetActive(false);
+        playing = false;
+        gameObject.SetActive(false);
     }
 
     void FixedUpdate()
@@ -39,10 +36,17 @@ public class GhostReplay : MonoBehaviour
         if (!playing) return;
         t += Time.fixedDeltaTime;
 
-        // Ende erreicht?
-        if (t >= source.frames[^1].t) { Stop(); return; }
+        // ENDE? Dann Loopen!
+        if (t >= source.frames[^1].t)
+        {
+            t = 0f;
+            i = 1;
+            var f0 = source.frames[0];
+            rb.position = f0.pos;
+            rb.rotation = f0.rotZ;
+            return;
+        }
 
-        // zum passenden Segment vorrücken
         while (i < source.frames.Count && source.frames[i].t < t) i++;
 
         var a = source.frames[i - 1];
@@ -54,8 +58,5 @@ public class GhostReplay : MonoBehaviour
 
         rb.MovePosition(pos);
         rb.MoveRotation(rot);
-
-        //Debug.Log($"Ghost Replay: t={t:F2} pos={pos} rot={rot} seg={seg:F2} frame={i}/{source.frames.Count}");
-        //Debug.Log($"LapRecorder: Frame aufgenommen t={t:F2}, pos={rb.position}, rotZ={rb.rotation}, frames.Count={source.frames.Count}");
     }
 }

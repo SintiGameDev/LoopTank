@@ -47,6 +47,9 @@ public class GhostManager : MonoBehaviour
         // Nur wenn wir wirklich eine gespeicherte Runde haben
         if (toReplay != null)
         {
+            // *** KLONE genau das LapData-Objekt, das dieser Ghost wiederholen soll! ***
+            LapData ghostLap = Clone(toReplay);
+
             // Neue Ghost-Instanz erzeugen
             var go = Instantiate(
                 ghostPrefab,
@@ -55,7 +58,7 @@ public class GhostManager : MonoBehaviour
                 ghostParent // kann null sein
             );
             var ghost = go.GetComponent<GhostReplay>();
-            ghost.Play(toReplay);
+            ghost.Play(ghostLap);
 
             // In Liste aufnehmen
             ghostInstances.Add(ghost);
@@ -68,6 +71,7 @@ public class GhostManager : MonoBehaviour
             }
         }
     }
+
 
     // Call am Rundenende:
     public void OnLapFinished(float lapTime)
