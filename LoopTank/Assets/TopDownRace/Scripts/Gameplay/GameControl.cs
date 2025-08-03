@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
 
 namespace TopDownRace
 {
@@ -34,6 +35,11 @@ namespace TopDownRace
         [HideInInspector]
         public bool m_StartRace;
         public static bool m_restartGame;
+
+        //Timer
+        public Timer roundTimer; // Im Inspector zuweisen!
+        private bool timerStarted = false; // Merkt, ob der Timer schon gestartet wurde
+        private bool timerUiShown = true; // Verhindert mehrfaches Anzeigen der UI
 
         private void Awake()
         {
@@ -163,9 +169,48 @@ namespace TopDownRace
 
             // ➜ Jetzt beginnt die erste Runde wirklich:
             StartLapTimer();
+            // ➜ Hier den GhostManager informieren, dass die Runde begonnen hat:
+
+            if (roundTimer == null)
+            {//find timer automatically if not set
+             //roundTimer = GameObject.FindGameObjectsWithTag("Timer");
+             //// Replace this line:
+             //roundTimer = GameObject.FindGameObjectsWithTag("Timer");
+
+                // With the following corrected code:
+                GameObject timerObject = GameObject.FindGameObjectWithTag("Timer");
+                if (timerObject != null)
+                {
+                    roundTimer = timerObject.GetComponent<Timer>();
+                    if (roundTimer == null)
+                    {
+                        Debug.LogError("GhostManager: The object with tag 'Timer' does not have a Timer component.");
+                    }
+                }
+                else
+                {
+                    Debug.LogError("GhostManager: No GameObject with tag 'Timer' found!");
+                }
+                if (roundTimer == null)
+                {
+                    Debug.LogError("GhostManager: No Timer found! Please assign a Timer in the Inspector or ensure one exists in the scene.");
+                    
+                    //return;
+                    yield break; // Ensure we exit the coroutine if no timer is found
+                }
+            }
+            // TIMER NUR BEI ERSTER RUNDE STARTEN
+            //if (!timerStarted && roundTimer != null)
+            if (!timerStarted && roundTimer != null)
+            {
+                Debug.Log("GhostManager: Starting round timer.");
+                roundTimer.StartTimer();
+                timerStarted = true;
+                timerUiShown = false; // falls z.B. Reset erlaubt ist
+            }
             // Falls du OnLapStarted noch nicht in Start() aufgerufen hast, dann hier:
             // GhostManager.Instance.OnLapStarted();
-            
+
         }
 
 
