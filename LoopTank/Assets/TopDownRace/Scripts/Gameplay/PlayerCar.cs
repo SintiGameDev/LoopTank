@@ -152,29 +152,39 @@ namespace TopDownRace
                 Debug.LogError("CarPhysics-Komponente nicht gefunden! Kann Geschwindigkeit nicht anpassen.", this);
             }
         }
-
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if (collision.CompareTag("Ghost") && m_CollisionsIgnored == false )
+            if (
+                collision.CompareTag("Ghost")
+                && !m_CollisionsIgnored
+                && !HasTagInHierarchy(collision.gameObject, "CollisionIgnorer")
+            )
             {
                 Debug.Log("Kollision mit Ghost! Kontrolle deaktiviert und Spiel verloren.");
                 m_Control = false;
-                //Time.timeScale = 0f;
                 UISystem.ShowUI("lose-ui");
 
                 GhostManager.Instance.ClearAllGhosts();
 
-                // Alle Motorengeräusche stoppen bei Spielverlust
                 if (m_EngineAudioSource != null && m_EngineAudioSource.isPlaying)
-                {
                     m_EngineAudioSource.Stop();
-                }
+
                 if (m_AccelerationAudioSource != null && m_AccelerationAudioSource.isPlaying)
-                {
                     m_AccelerationAudioSource.Stop();
-                }
             }
         }
+
+        bool HasTagInHierarchy(GameObject obj, string tag)
+        {
+            if (obj.CompareTag(tag)) return true;
+            foreach (Transform child in obj.transform)
+            {
+                if (HasTagInHierarchy(child.gameObject, tag))
+                    return true;
+            }
+            return false;
+        }
+
 
         // --- NEUE METHODE FÜR PHYSISCHE KOLLISIONEN ---
         // OnCollisionEnter2D wird aufgerufen, wenn dieser Collider2D beginnt, einen anderen 2D-Collider zu berühren.
