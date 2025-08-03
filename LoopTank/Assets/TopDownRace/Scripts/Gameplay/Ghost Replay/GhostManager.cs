@@ -57,7 +57,7 @@ public class GhostManager : MonoBehaviour
         }
     }
 
-    // Die Coroutine, die den Ghost nach delaySeconds startet
+    // Die Coroutine, die den Ghost nach delaySeconds startet und Sprite kurz blinken lässt
     private IEnumerator SpawnAndActivateGhostDelayed(LapData ghostLap, float delaySeconds)
     {
         // Ghost-Objekt direkt instanziieren (sichtbar, aber bewegt sich noch nicht)
@@ -68,7 +68,12 @@ public class GhostManager : MonoBehaviour
             ghostParent // kann null sein
         );
         var ghost = go.GetComponent<GhostReplay>();
-        // NICHT sofort ghost.Play(ghostLap);
+
+        // Sprite-Kind suchen und erstmal deaktivieren (für sicheres Blinken)
+        var spriteTf = go.transform.Find("Sprite");
+        GameObject spriteObj = spriteTf ? spriteTf.gameObject : null;
+        if (spriteObj != null)
+            spriteObj.SetActive(false);
 
         // CollisionIgnorer-Kind suchen (rekursiv) und für 5 Sekunden aktivieren
         var collisionIgnorer = FindDeepChild(go.transform, "CollisionIgnorer");
@@ -94,23 +99,35 @@ public class GhostManager : MonoBehaviour
         // Jetzt die Ghost-Bewegung starten!
         if (ghost != null)
             ghost.Play(ghostLap);
-    }
 
+        //SpriteRenderer holen
+        SpriteRenderer spriteRenderer = spriteObj ? spriteObj.GetComponent<SpriteRenderer>() : null;
+        if (spriteRenderer != null)
+        {
+            // Farbe auf transparent setzen, damit es nicht sofort sichtbar ist
+            spriteRenderer.color = new Color(1f, 1f, 1f, 0f);
+            // Dann kurz sichtbar machen
+            StartCoroutine(BlinkSprite(spriteObj));
+        }
+
+        // Das Sprite kurz blinken lassen
+        if (spriteObj != null)
+        {
+            spriteObj.SetActive(true);
+            yield return new WaitForSeconds(0.1f); // 0.1 Sekunden sichtbar
+            spriteObj.SetActive(false);
+        }
+    }
 
     // Coroutine zum späteren Deaktivieren des Kindobjekts
     private IEnumerator DisableAfterSeconds(GameObject obj, float seconds)
     {
         yield return new WaitForSeconds(seconds);
         if (obj != null)
+        {
             obj.SetActive(false);
-        // Fix for CS1061 and CS0118 errors
-
-        // Replace the following incorrect line in the DisableAfterSeconds method:
-        // obj.setTag(DefaultExecutionOrder = 0); // Sicherstellen, dass es nicht mehr aktiv ist
-
-        // With the corrected line:
-        obj.tag = "Untagged"; // Sicherstellen, dass es nicht mehr aktiv ist
-       // obj.setTag(DefaultExecutionOrder = 0); // Sicherstellen, dass es nicht mehr aktiv ist
+            obj.tag = "Untagged"; // Sicherstellen, dass es nicht mehr als Ignorer erkannt wird
+        }
     }
 
     // Rekursive Suche nach einem Kindobjekt mit Namen
@@ -170,7 +187,26 @@ public class GhostManager : MonoBehaviour
 
     // Optional: UI-Buttons können das hier aufrufen
     public void SetMode(int m) { mode = (GhostMode)m; }
+    // Add the missing BlinkSprite method to resolve the CS0103 error.
+    private IEnumerator BlinkSprite(GameObject spriteObj)
+    {
+        if (spriteObj == null) yield break;
 
+        SpriteRenderer spriteRenderer = spriteObj.GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null) yield break;
+
+        // Blink logic: make the sprite visible and invisible repeatedly
+        for (int i = 0; i < 3; i++) // Blink 3 times
+        {
+            spriteRenderer.color = new Color(1f, 1f, 1f, 1f); // Fully visible
+            yield return new WaitForSeconds(0.1f); // Visible for 0.1 seconds
+            spriteRenderer.color = new Color(1f, 1f, 1f, 0f); // Fully transparent
+            yield return new WaitForSeconds(0.1f); // Invisible for 0.1 seconds
+        }
+
+        // Ensure the sprite is fully visible at the end
+        spriteRenderer.color = new Color(1f, 1f, 1f, 1f);
+    }
     // Für Zugriff von außen (z.B. Anzeige)
     public IReadOnlyList<GhostReplay> ActiveGhosts => ghostInstances;
 }

@@ -70,7 +70,7 @@ public class Timer : MonoBehaviour
 
         while (currentTime > 0)
         {
-            Debug.Log($"Timer läuft: {currentTime} Sekunden verbleibend.");
+            //Debug.Log($"Timer läuft: {currentTime} Sekunden verbleibend.");
             // Aktualisiere die UI in jedem Frame
             UpdateTimerUI(currentTime);
 
@@ -115,7 +115,7 @@ public class Timer : MonoBehaviour
 
             // Formatieren als MM:SS
             timerTextUI.text = string.Format("{0:00}:{1:00}", minutes, seconds);
-            Debug.Log($"Timer aktualisiert: {timerTextUI.text}");
+            //Debug.Log($"Timer aktualisiert: {timerTextUI.text}");
         }
     }
 
