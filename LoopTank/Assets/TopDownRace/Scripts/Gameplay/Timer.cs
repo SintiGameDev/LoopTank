@@ -1,6 +1,7 @@
-using UnityEngine;
 using System.Collections; // Notwendig für Coroutinen
 using TMPro; // Wichtig: Füge dies hinzu, wenn du TextMeshPro verwendest!
+using TopDownRace;
+using UnityEngine;
              // Wenn du den alten UI.Text verwendest, nimm: using UnityEngine.UI;
 
 public class Timer : MonoBehaviour
@@ -82,6 +83,22 @@ public class Timer : MonoBehaviour
         UpdateTimerUI(currentTime); // Letztes Update, um 00:00 anzuzeigen
         TimerEnd = true; // TimerEnd auf TRUE setzen
         Debug.Log("Timer beendet!");
+        PlayerCar playerCar = PlayerCar.m_Current; // Hole die aktuelle Spieler-Auto-Instanz
+        PlayerCar.m_Current.m_Control = false;
+        UISystem.ShowUI("win-ui");
+        //GameControl.m_WonRace = true;
+        //// Replace the line causing the error:
+        //GameControl.m_WonRace = true;
+
+        // With the following code:
+        if (GameControl.m_Current != null)
+        {
+            GameControl.m_Current.m_WonRace = true;
+        }
+        else
+        {
+            Debug.LogError("GameControl.m_Current is null. Cannot set m_WonRace.");
+        }
     }
 
     /// <summary>
