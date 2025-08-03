@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
 namespace TopDownRace
 {
     public class CarPhysics : MonoBehaviour
@@ -17,10 +18,29 @@ namespace TopDownRace
 
         public GameObject m_TireTracks;
         public Transform m_TireMarkPoint;
-        // Start is called before the first frame update
+
+        // --- VARIABLEN FÜR DEN TIRETRACK-SOUND ---
+        [Tooltip("Der Sound-Clip, der jedes Mal abgespielt wird, wenn eine Reifenspur platziert wird (z.B. ein Quietsch- oder Rutschgeräusch).")]
+        public AudioClip m_TireTrackSoundClip;
+
+        [Tooltip("Die Lautstärke für den Reifenspur-Soundeffekt.")]
+        [Range(0.0f, 1.0f)]
+        public float m_TireTrackSoundVolume = 0.7f; // Standardlautstärke für Reifenspuren
+
+        private AudioSource m_TireTrackAudioSource; // Dedizierte AudioSource für diesen Sound
+        // -------------------------------------
+
+        // Start is called before the first frame-Aufruf
         void Start()
         {
             m_Body = GetComponent<Rigidbody2D>();
+
+            // --- INITIALISIERUNG DER TIRETRACK-SOUND-AUDIO SOURCE ---
+            m_TireTrackAudioSource = gameObject.AddComponent<AudioSource>();
+            m_TireTrackAudioSource.loop = false; // Dies sind einmalige Sounds
+            m_TireTrackAudioSource.playOnAwake = false; // Wir spielen sie manuell ab
+            m_TireTrackAudioSource.volume = m_TireTrackSoundVolume; // Anfangslautstärke einstellen
+            // --------------------------------------------------------
         }
 
         void Update()
@@ -28,16 +48,25 @@ namespace TopDownRace
             Vector2 velocity = m_Body.linearVelocity;
             Vector2 forward = Helper.ToVector2(transform.right);
             float delta = Vector2.SignedAngle(forward, velocity);
+
+            // Bedingung für das Erzeugen von Reifenspuren
             if (velocity.magnitude > 10 && Mathf.Abs(delta) > 20)
             {
                 GameObject obj = Instantiate(m_TireTracks);
                 obj.transform.position = m_TireMarkPoint.position;
                 obj.transform.rotation = m_TireMarkPoint.rotation;
                 Destroy(obj, 2);
+
+                // --- HIER WIRD DER TIRETRACK-SOUND ABGESPIELT ---
+                if (m_TireTrackSoundClip != null)
+                {
+                    m_TireTrackAudioSource.PlayOneShot(m_TireTrackSoundClip, m_TireTrackSoundVolume);
+                }
+                // --------------------------------------------------
             }
         }
 
-        // Update is called once per frame
+        // FixedUpdate wird einmal pro fester Physik-Frame-Rate aufgerufen
         void FixedUpdate()
         {
             Vector3 forward = Quaternion.Euler(0, 0, m_Body.rotation) * Vector3.right;
@@ -50,8 +79,6 @@ namespace TopDownRace
             m_Body.linearVelocity -= .02f * Helper.ToVector2(project1);
 
             m_Body.angularVelocity += 40 * m_InputSteer;
-
-
 
             m_InputAccelerate = 0;
             m_InputSteer = 0;
