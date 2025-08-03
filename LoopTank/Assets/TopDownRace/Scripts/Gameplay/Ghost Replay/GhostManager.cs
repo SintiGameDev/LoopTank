@@ -81,7 +81,7 @@ public class GhostManager : MonoBehaviour
         if (collisionIgnorer != null)
         {
             collisionIgnorer.gameObject.SetActive(true);
-            StartCoroutine(DisableAfterSeconds(collisionIgnorer.gameObject, 5f));
+            StartCoroutine(DisableAfterSeconds(collisionIgnorer.gameObject, 2f));
         }
 
         // In Liste aufnehmen (optional: kann auch erst nach Play passieren)
