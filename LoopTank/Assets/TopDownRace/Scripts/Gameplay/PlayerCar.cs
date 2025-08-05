@@ -30,6 +30,11 @@ namespace TopDownRace
         public AudioClip m_EngineSoundClip;
         private AudioSource m_EngineAudioSource; // Referenz auf die AudioSource Komponente für das Grundgeräusch
 
+        // NEU: Variable zur manuellen Steuerung der Lautstärke des Grundmotorgeräuschs
+        [Tooltip("Die Lautstärke des konstanten Grund-Motorengeräuschs.")]
+        [Range(0.0f, 1.0f)]
+        public float m_EngineVolume = 0.5f;
+
         // --- SOUND-VARIABLEN FÜR DEN GESCHWINDIGKEITSABHÄNGIGEN SOUND (PITCH-ÄNDERUNG) ---
         [Tooltip("Das Soundfile, dessen Tonhöhe sich mit der Geschwindigkeit des Panzers ändert (z.B. Turbopfeifen, Anfahrgeräusch).")]
         public AudioClip m_AccelerationSoundClip;
@@ -154,7 +159,7 @@ namespace TopDownRace
                 m_EngineAudioSource.clip = m_EngineSoundClip;
                 m_EngineAudioSource.loop = true;
                 m_EngineAudioSource.playOnAwake = false;
-                m_EngineAudioSource.volume = 0.5f;
+                m_EngineAudioSource.volume = m_EngineVolume; // Jetzt wird die neue Variable verwendet
 
                 m_EngineAudioSource.Play();
             }

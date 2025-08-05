@@ -23,6 +23,14 @@ namespace TopDownRace
         [Tooltip("Der Sound-Clip, der geloopt wird, wenn Reifenspuren erzeugt werden (z.B. ein konstantes Quietsch-/Rutschgeräusch).")]
         public AudioClip m_TireTrackLoopSoundClip;
 
+        [Tooltip("Die minimale Tonhöhe des Reifenspur-Sounds bei geringem Drift.")]
+        [Range(0.1f, 2.0f)]
+        public float m_TireTrackMinPitch = 0.8f;
+
+        [Tooltip("Die maximale Tonhöhe des Reifenspur-Sounds bei starkem Drift.")]
+        [Range(1.0f, 3.0f)]
+        public float m_TireTrackMaxPitch = 1.8f;
+
         [Tooltip("Die maximale Lautstärke für den loopenden Reifenspur-Soundeffekt.")]
         [Range(0.0f, 1.0f)]
         public float m_TireTrackMaxVolume = 0.7f; // Maximale Lautstärke
@@ -45,10 +53,11 @@ namespace TopDownRace
             if (m_TireTrackLoopSoundClip != null)
             {
                 m_TireTrackLoopAudioSource.clip = m_TireTrackLoopSoundClip;
-                m_TireTrackLoopAudioSource.loop = true;          // Sound soll loopen
-                m_TireTrackLoopAudioSource.playOnAwake = false;  // Wir starten ihn manuell
-                m_TireTrackLoopAudioSource.volume = 0.0f;        // Startet stumm
-                m_TireTrackLoopAudioSource.Play();               // Beginnt den Loop (stumm)
+                m_TireTrackLoopAudioSource.loop = true;      // Sound soll loopen
+                m_TireTrackLoopAudioSource.playOnAwake = false;    // Wir starten ihn manuell
+                m_TireTrackLoopAudioSource.volume = 0.0f;    // Startet stumm
+                m_TireTrackLoopAudioSource.pitch = m_TireTrackMinPitch; // Startet mit minimaler Tonhöhe
+                m_TireTrackLoopAudioSource.Play();           // Beginnt den Loop (stumm)
             }
             else
             {
@@ -68,10 +77,10 @@ namespace TopDownRace
             // Falls transform.up die "Vorwärts"-Richtung deines Autos ist, müsstest du hier:
             // Vector2 forward = Helper.ToVector2(transform.up); verwenden.
             Vector2 forward = Helper.ToVector2(transform.right);
-            float delta = Vector2.SignedAngle(forward, velocity);
+            float driftAngle = Vector2.SignedAngle(forward, velocity);
 
             // Bedingung für das Erzeugen von Reifenspuren und Aktivieren des Sounds
-            bool shouldSpawnTireTracks = (velocity.magnitude > 10 && Mathf.Abs(delta) > 20);
+            bool shouldSpawnTireTracks = (velocity.magnitude > 10 && Mathf.Abs(driftAngle) > 20);
 
             if (shouldSpawnTireTracks)
             {
@@ -90,13 +99,17 @@ namespace TopDownRace
                 m_IsTireSoundActive = false;
             }
 
-            // Steuerung des loopenden Reifenspur-Sounds (Ein- und Ausblenden)
+            // Steuerung des loopenden Reifenspur-Sounds (Ein- und Ausblenden + Pitch-Änderung)
             if (m_TireTrackLoopAudioSource != null && m_TireTrackLoopAudioSource.clip != null)
             {
                 if (m_IsTireSoundActive)
                 {
                     // Blende Sound ein
                     m_TireTrackLoopAudioSource.volume = Mathf.MoveTowards(m_TireTrackLoopAudioSource.volume, m_TireTrackMaxVolume, m_TireTrackFadeSpeed * Time.deltaTime);
+
+                    // Passe die Tonhöhe basierend auf dem Drift-Winkel an
+                    float driftNormalized = Mathf.Clamp01(Mathf.Abs(driftAngle) / 90f); // Normalisieren Sie den Winkel von 0-90° auf 0-1
+                    m_TireTrackLoopAudioSource.pitch = Mathf.Lerp(m_TireTrackMinPitch, m_TireTrackMaxPitch, driftNormalized);
                 }
                 else
                 {

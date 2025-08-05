@@ -298,11 +298,12 @@ MonoBehaviour:
   m_RotationSpeed: 0.69
   m_TankTopRotationSpeed: 50
   m_EngineSoundClip: {fileID: 8300000, guid: 5e2e48fd53cd8154293a68debb826af3, type: 3}
+  m_EngineVolume: 0.117
   m_AccelerationSoundClip: {fileID: 8300000, guid: 61ca427854fb8cf4e98e1e914f3a560a, type: 3}
-  m_MinPitch: 0.39
-  m_MaxPitch: 2.5
-  m_MinAccelerationVolume: 0.761
-  m_MaxAccelerationVolume: 1
+  m_MinPitch: 0.52
+  m_MaxPitch: 2.16
+  m_MinAccelerationVolume: 0.128
+  m_MaxAccelerationVolume: 0.58
   m_CollisionSoundClips:
   - {fileID: 8300000, guid: d868603a4d1bb374486fe97d61103eb8, type: 3}
   m_CollisionSoundVolume: 0.386
@@ -360,7 +361,9 @@ MonoBehaviour:
   m_TireTracks: {fileID: 5057899167434053767, guid: e3e316b6b32e0dd498ebc3fb2003f777, type: 3}
   m_T_TireMarkPoint: {fileID: 4328520295589983419}
   m_TireTrackLoopSoundClip: {fileID: 8300000, guid: eb98fe7603406ad49ac6697a79d35917, type: 3}
-  m_TireTrackMaxVolume: 0.383
+  m_TireTrackMinPitch: 1
+  m_TireTrackMaxPitch: 1
+  m_TireTrackMaxVolume: 0.101
   m_TireTrackFadeSpeed: 1.25
 --- !u!70 &1336818291986090925
 CapsuleCollider2D:
