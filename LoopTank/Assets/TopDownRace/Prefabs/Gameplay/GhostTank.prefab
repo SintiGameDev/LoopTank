@@ -77,7 +77,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 11
   m_Sprite: {fileID: 21300000, guid: 3182c63fecf632b4d9557dfc56aee34e, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0.2028302, b: 0.75798625, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -195,7 +195,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 10
   m_Sprite: {fileID: 21300000, guid: ef62d1e26d639ca468344dbeeb4078a7, type: 3}
-  m_Color: {r: 0, g: 0.57254905, b: 0.27450982, a: 1}
+  m_Color: {r: 1, g: 0.28773582, b: 0.9230688, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -497,6 +497,10 @@ PrefabInstance:
     - target: {fileID: 8272315358889481688, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
       propertyPath: m_Name
       value: Smoke
+      objectReference: {fileID: 0}
+    - target: {fileID: 8272315358889481688, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

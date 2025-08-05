@@ -1,4 +1,5 @@
 using UnityEngine;
+using TopDownRace; // Fügen Sie diese Zeile hinzu
 
 public class LapTrigger : MonoBehaviour
 {
@@ -9,7 +10,7 @@ public class LapTrigger : MonoBehaviour
     void Start()
     {
         lapStartTime = Time.time;
-        ghostManager.OnLapStarted();
+        // ghostManager.OnLapStarted(); // Diese Zeile wird im ersten Durchlauf normalerweise nicht benötigt
     }
 
     void OnTriggerEnter2D(Collider2D other)

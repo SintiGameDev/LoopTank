@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2503328018429629141
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8604807484245856255}
+  m_Layer: 0
+  m_Name: tire-mark-point (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8604807484245856255
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2503328018429629141}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -4.51, y: -1.61, z: 0.2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3225385444474873089}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2853088586134609860
 GameObject:
   m_ObjectHideFlags: 0
@@ -113,7 +144,7 @@ Transform:
   m_GameObject: {fileID: 5100538839710380773}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.51, y: 0, z: 0.2}
+  m_LocalPosition: {x: -4.51, y: 1.57, z: 0.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -277,7 +308,9 @@ Transform:
   - {fileID: 6901344912606148225}
   - {fileID: 2906645362740576315}
   - {fileID: 9167226966062709418}
+  - {fileID: 8465245013988140122}
   - {fileID: 4328520295589983419}
+  - {fileID: 8604807484245856255}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &3740486400603162936
@@ -303,7 +336,7 @@ MonoBehaviour:
   m_MinPitch: 0.52
   m_MaxPitch: 2.16
   m_MinAccelerationVolume: 0.128
-  m_MaxAccelerationVolume: 0.58
+  m_MaxAccelerationVolume: 0.415
   m_CollisionSoundClips:
   - {fileID: 8300000, guid: d868603a4d1bb374486fe97d61103eb8, type: 3}
   m_CollisionSoundVolume: 0.386
@@ -363,8 +396,8 @@ MonoBehaviour:
   m_TireTrackLoopSoundClip: {fileID: 8300000, guid: eb98fe7603406ad49ac6697a79d35917, type: 3}
   m_TireTrackMinPitch: 1
   m_TireTrackMaxPitch: 1
-  m_TireTrackMaxVolume: 0.101
-  m_TireTrackFadeSpeed: 1.25
+  m_TireTrackMaxVolume: 0.053
+  m_TireTrackFadeSpeed: 0.46
 --- !u!70 &1336818291986090925
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -622,6 +655,76 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1001 &4693338290316825378
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 3225385444474873089}
+    m_Modifications:
+    - target: {fileID: 3771906740987770744, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
+      propertyPath: m_RootOrder
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3771906740987770744, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -4.78
+      objectReference: {fileID: 0}
+    - target: {fileID: 3771906740987770744, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -1.01
+      objectReference: {fileID: 0}
+    - target: {fileID: 3771906740987770744, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3771906740987770744, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3771906740987770744, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3771906740987770744, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3771906740987770744, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3771906740987770744, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3771906740987770744, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3771906740987770744, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8272315358889481688, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
+      propertyPath: m_Name
+      value: Smoke (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 8272315358889481688, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
+--- !u!4 &8465245013988140122 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3771906740987770744, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
+  m_PrefabInstance: {fileID: 4693338290316825378}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5431351498425929170
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -636,7 +739,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3771906740987770744, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5.73
+      value: -4.78
       objectReference: {fileID: 0}
     - target: {fileID: 3771906740987770744, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
       propertyPath: m_LocalPosition.y
@@ -677,6 +780,10 @@ PrefabInstance:
     - target: {fileID: 8272315358889481688, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
       propertyPath: m_Name
       value: Smoke
+      objectReference: {fileID: 0}
+    - target: {fileID: 8272315358889481688, guid: 25135463cf04bcb4ea153fb181acb414, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
