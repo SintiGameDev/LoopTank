@@ -222,6 +222,10 @@ MonoBehaviour:
   m_FinishedRounds: {fileID: 3325373835167552987}
   m_Timer: {fileID: 1060798323447359909}
   m_Position: {fileID: 5391038244361026279}
+  m_CountdownSound3: {fileID: 8300000, guid: 0893c27170a4768428bdb7a9ea34bc1d, type: 3}
+  m_CountdownSound2: {fileID: 8300000, guid: 0893c27170a4768428bdb7a9ea34bc1d, type: 3}
+  m_CountdownSound1: {fileID: 8300000, guid: 0893c27170a4768428bdb7a9ea34bc1d, type: 3}
+  m_GoSound: {fileID: 8300000, guid: 03aed578ceedd6e44b23318a500324ac, type: 3}
 --- !u!1 &3325373835167552988
 GameObject:
   m_ObjectHideFlags: 0
