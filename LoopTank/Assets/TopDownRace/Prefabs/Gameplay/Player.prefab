@@ -173,6 +173,25 @@ MonoBehaviour:
   m_Speed: 0
   m_CurrentCheckpoint: 0
   m_Control: 0
+  m_RotationSpeed: 0.7
+  m_TankTopRotationSpeed: 100
+  m_EngineSoundClip: {fileID: 0}
+  m_EngineVolume: 0.5
+  m_AccelerationSoundClip: {fileID: 0}
+  m_MinPitch: 0.8
+  m_MaxPitch: 1.8
+  m_MinAccelerationVolume: 0
+  m_MaxAccelerationVolume: 1
+  m_CollisionSoundClips: []
+  m_CollisionSoundVolume: 0.7
+  m_TankTopRotationSoundClip: {fileID: 0}
+  m_TankTopRotationVolume: 0.8
+  m_TankTopFadeSpeed: 2
+  m_BulletPrefab: {fileID: 0}
+  m_BulletSpawnPoint: {fileID: 0}
+  m_BulletSpeed: 15
+  m_BulletLifetime: 3
+  m_ShootSoundClip: {fileID: 0}
 --- !u!50 &802556952416478341
 Rigidbody2D:
   serializedVersion: 5
@@ -217,7 +236,12 @@ MonoBehaviour:
   m_InputSteer: 0
   m_SpeedForce: 30
   m_TireTracks: {fileID: 5057899167434053767, guid: e3e316b6b32e0dd498ebc3fb2003f777, type: 3}
-  m_TireMarkPoint: {fileID: 4328520295589983419}
+  m_T_TireMarkPoint: {fileID: 0}
+  m_TireTrackLoopSoundClip: {fileID: 0}
+  m_TireTrackMinPitch: 0.8
+  m_TireTrackMaxPitch: 1.8
+  m_TireTrackMaxVolume: 0.7
+  m_TireTrackFadeSpeed: 2
 --- !u!70 &1336818291986090925
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
