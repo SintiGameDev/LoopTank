@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3151887228528347698}
   - component: {fileID: 7488625345719104785}
   m_Layer: 0
-  m_Name: InputControl
+  m_Name: GhostManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -58,6 +58,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fded19dde7ef2e94889bc30bf7a91a94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lapStatusText: {fileID: 0}
+  lastLapTimeText: {fileID: 0}
   playerRecorder: {fileID: -297547805703134724, guid: 4441d6191402f15489c7d852adc31f9b, type: 3}
   ghostPrefab: {fileID: 6258295094829372238, guid: 2d4e3b2e78048d543af2315db7419e4b, type: 3}
+  ghostParent: {fileID: 0}
   mode: 1
+  lapStatusDisplayTime: 3
+  lapStatusFadeDuration: 0.5
+  lastLapTimeDisplayTime: 3
+  lastLapTimeFadeDuration: 0.5
+  maxGhosts: 2
+  m_LapFinishedSound: {fileID: 0}
+  m_LapFinishedVolume: 1
+  roundTimer: {fileID: 0}

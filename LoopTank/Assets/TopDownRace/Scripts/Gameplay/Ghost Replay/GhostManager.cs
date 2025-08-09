@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 namespace TopDownRace
 {
@@ -9,14 +10,30 @@ namespace TopDownRace
         public static GhostManager Instance { get; private set; }
 
         [Header("References")]
+        public TMP_Text lapStatusText;
+        public TMP_Text lastLapTimeText;
         public LapRecorder playerRecorder;
         public GameObject ghostPrefab;
         public Transform ghostParent;
+        // Neue Referenz für den UI-Balken
+        public GameObject lapStatusUIBar;
 
         public enum GhostMode { Off, LastLap, BestLap }
 
         [Header("Ghost Mode")]
         public GhostMode mode = GhostMode.LastLap;
+
+        [Header("Lap Status Text Settings")]
+        [Tooltip("Die Zeit in Sekunden, die der Lap Status Text voll sichtbar bleibt.")]
+        public float lapStatusDisplayTime = 3.0f;
+        [Tooltip("Die Zeit in Sekunden für den Ein- und Ausblendeffekt des Lap Status Textes.")]
+        public float lapStatusFadeDuration = 0.5f;
+
+        [Header("Last Lap Time Text Settings")]
+        [Tooltip("Die Zeit in Sekunden, die der Last Lap Time Text voll sichtbar bleibt.")]
+        public float lastLapTimeDisplayTime = 3.0f;
+        [Tooltip("Die Zeit in Sekunden für den Ein- und Ausblendeffekt des Last Lap Time Textes.")]
+        public float lastLapTimeFadeDuration = 0.5f;
 
         [Header("Limits")]
         public int maxGhosts = 2;
@@ -34,6 +51,14 @@ namespace TopDownRace
 
         private List<GhostReplay> ghostInstances = new List<GhostReplay>();
 
+        private int currentLapNumber = 0;
+        private float lastLapTime = 0f;
+        private float previousLapTime = 0f;
+
+        // Coroutine-Referenzen, um sie gezielt zu stoppen
+        private Coroutine lapStatusFadeRoutine;
+        private Coroutine lastLapTimeFadeRoutine;
+
         // Timer
         public Timer roundTimer;
         private bool timerStarted = false;
@@ -46,6 +71,7 @@ namespace TopDownRace
             if (Instance != null && Instance != this)
             {
                 Debug.LogWarning("Multiple GhostManager instances found! Destroying duplicate.");
+                Destroy(this.gameObject);
                 return;
             }
             Instance = this;
@@ -59,16 +85,49 @@ namespace TopDownRace
                 m_AudioSource = gameObject.AddComponent<AudioSource>();
                 m_AudioSource.playOnAwake = false;
             }
+
+            // Sicherstellen, dass die UI-Elemente zu Beginn deaktiviert sind, damit die Coroutine sie kontrollieren kann.
+            if (lapStatusText != null)
+            {
+                lapStatusText.gameObject.SetActive(false);
+            }
+            if (lastLapTimeText != null)
+            {
+                lastLapTimeText.gameObject.SetActive(false);
+            }
+            if (lapStatusUIBar != null)
+            {
+                lapStatusUIBar.SetActive(false);
+            }
+
+            currentLapNumber = 0;
         }
 
         public void OnLapStarted()
         {
             playerRecorder.BeginLap();
+            currentLapNumber++;
+
+            // Starte die Anzeige für den Rundenstatus, dies wird jetzt immer beim Start der Runde gemacht.
+            if (lapStatusText != null)
+            {
+                // Stoppe die vorherige Coroutine, falls sie noch läuft.
+                if (lapStatusFadeRoutine != null) StopCoroutine(lapStatusFadeRoutine);
+
+                // UI-Balken aktivieren, bevor die Coroutine startet
+                if (lapStatusUIBar != null)
+                {
+                    lapStatusUIBar.SetActive(true);
+                }
+
+                lapStatusText.text = $"Lap {currentLapNumber} Started";
+                lapStatusFadeRoutine = StartCoroutine(FadeText(lapStatusText, lapStatusFadeDuration, lapStatusDisplayTime, lapStatusUIBar));
+            }
         }
 
-        public void OnLapFinished(float lapTime)
+        public void OnLapFinished(float currentLapTime)
         {
-            playerRecorder.EndLap(lapTime);
+            playerRecorder.EndLap(currentLapTime);
 
             if (playerRecorder.currentLap == null || playerRecorder.currentLap.frames.Count < 2)
             {
@@ -76,7 +135,38 @@ namespace TopDownRace
                 return;
             }
 
-            // Spiele den 'Runde beendet'-Sound ab, wenn er zugewiesen ist
+            // Zeigt den Last Lap Time Text erst ab Runde 2 an, da Runde 1 die erste vollständige Runde ist.
+            if (lastLapTimeText != null && currentLapNumber > 1)
+            {
+                if (lastLapTimeFadeRoutine != null) StopCoroutine(lastLapTimeFadeRoutine);
+
+                float timeDifference = currentLapTime - lastLapTime;
+                string statusText = "";
+                Color textColor = Color.white;
+
+                // Wir verwenden die Differenz zur vorherigen Runde, die in lastLapTime gespeichert ist.
+                // In der ersten vollständigen Runde (currentLapNumber == 1) gibt es noch keine vorherige Zeit.
+                if (lastLapTime > 0)
+                {
+                    if (timeDifference < 0)
+                    {
+                        statusText = $"Best Lap: {FormatTime(timeDifference)}";
+                        // Die Farbe wird in der Coroutine gesetzt
+                    }
+                    else
+                    {
+                        statusText = $"Previous Lap: {FormatTime(timeDifference)}";
+                        // Die Farbe wird in der Coroutine gesetzt
+                    }
+                }
+
+                lastLapTimeText.text = statusText;
+                lastLapTimeFadeRoutine = StartCoroutine(FadeText(lastLapTimeText, lastLapTimeFadeDuration, lastLapTimeDisplayTime));
+            }
+
+            // Hier haben wir die Logik vereinfacht. Die letzte Rundenzeit wird immer gespeichert.
+            lastLapTime = currentLapTime;
+
             if (m_LapFinishedSound != null && m_AudioSource != null)
             {
                 m_AudioSource.PlayOneShot(m_LapFinishedSound, m_LapFinishedVolume);
@@ -84,12 +174,20 @@ namespace TopDownRace
 
             lastLap = Clone(playerRecorder.currentLap);
 
-            if (bestLap == null || lapTime < bestLap.lapTime)
+            if (bestLap == null || currentLapTime < bestLap.lapTime)
+            {
                 bestLap = Clone(playerRecorder.currentLap);
+            }
 
             LapData toReplay = null;
-            if (mode == GhostMode.LastLap) toReplay = lastLap;
-            else if (mode == GhostMode.BestLap) toReplay = bestLap;
+            if (mode == GhostMode.LastLap)
+            {
+                toReplay = lastLap;
+            }
+            else if (mode == GhostMode.BestLap)
+            {
+                toReplay = bestLap;
+            }
 
             if (!hasSpawnedFirstGhost)
             {
@@ -101,6 +199,55 @@ namespace TopDownRace
             {
                 StartCoroutine(SpawnAndActivateGhostDelayed(Clone(toReplay), 0.8f));
             }
+        }
+
+        private IEnumerator FadeText(TMP_Text textObject, float fadeDuration, float displayTime, GameObject associatedBar = null)
+        {
+            if (textObject == null) yield break;
+
+            Color baseColor = textObject.color;
+            Color startColor = new Color(baseColor.r, baseColor.g, baseColor.b, 0);
+            Color endColor = new Color(baseColor.r, baseColor.g, baseColor.b, 1);
+
+            // Fade In
+            textObject.gameObject.SetActive(true);
+            float timer = 0;
+            while (timer < fadeDuration)
+            {
+                timer += Time.deltaTime;
+                textObject.color = Color.Lerp(startColor, endColor, timer / fadeDuration);
+                yield return null;
+            }
+            textObject.color = endColor;
+
+            // Wartezeit
+            yield return new WaitForSeconds(displayTime);
+
+            // Fade Out
+            timer = 0;
+            while (timer < fadeDuration)
+            {
+                timer += Time.deltaTime;
+                textObject.color = Color.Lerp(endColor, startColor, timer / fadeDuration);
+                yield return null;
+            }
+            textObject.color = startColor;
+            textObject.gameObject.SetActive(false);
+
+            // Deaktiviere den zugehörigen Balken, wenn er existiert
+            if (associatedBar != null)
+            {
+                associatedBar.SetActive(false);
+            }
+        }
+
+        private string FormatTime(float time)
+        {
+            // Die absolute Zeit verwenden, da TimeSpan mit negativen Werten Probleme hat
+            System.TimeSpan timeSpan = System.TimeSpan.FromSeconds(Mathf.Abs(time));
+            // Hinzufügen des Vorzeichens für positive oder negative Zeiten
+            string sign = time >= 0 ? "+" : "-";
+            return $"{sign}{timeSpan.Minutes:D2}:{timeSpan.Seconds:D2}.{timeSpan.Milliseconds:D3}";
         }
 
         private IEnumerator SpawnAndActivateGhostDelayed(LapData ghostLap, float delaySeconds)

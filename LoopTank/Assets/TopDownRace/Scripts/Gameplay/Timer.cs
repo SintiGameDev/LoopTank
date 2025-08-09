@@ -1,102 +1,127 @@
-using System.Collections; // Notwendig für Coroutinen
-using TMPro; // Wichtig: Füge dies hinzu, wenn du TextMeshPro verwendest!
+using System.Collections;
+using TMPro;
 using TopDownRace;
 using UnityEngine;
-// Wenn du den alten UI.Text verwendest, nimm: using UnityEngine.UI;
+using System.Collections.Generic; // Notwendig für List<T>
 
 public class Timer : MonoBehaviour
 {
     [Tooltip("Die Dauer des Timers in Sekunden, einstellbar im Inspector.")]
-    [SerializeField] // Macht die private Variable im Inspector sichtbar
+    [SerializeField]
     private float timerDuration = 5.0f;
 
     [Tooltip("Wird auf TRUE gesetzt, wenn der Timer abgelaufen ist, und auf FALSE, wenn er gestartet wird.")]
-    public bool TimerEnd { get; private set; } = false; // Property mit privatem Setter
+    public bool TimerEnd { get; private set; } = false;
 
-    private Coroutine timerCoroutine; // Speichert die Referenz zur laufenden Coroutine
+    private Coroutine timerCoroutine;
 
-    // NEU: Referenz auf das UI-Text-Element
-    private TextMeshProUGUI timerTextUI; // Ändere dies zu 'Text timerTextUI;', wenn du UnityEngine.UI.Text verwendest
+    public TextMeshProUGUI timerTextUI;
 
-    // NEU: Aktuelle verbleibende Zeit des Timers
+    // NEU: Referenz für deinen Prefab
+    [Tooltip("Der Prefab, der zusammen mit dem Timer aktiviert werden soll.")]
+    public GameObject prefabToActivate;
+
     private float m_CurrentTime;
+    private int m_LastSecondDisplayed; // NEU: Speichert die letzte angezeigte Sekunde
+
+    // NEU: LeanTween Skalierungseinstellungen
+    [Header("LeanTween Scale Animation")]
+    [Tooltip("Der Skalierungsfaktor für den Tween-Effekt.")]
+    [SerializeField]
+    private float m_ScaleFactor = 1.2f;
+    [Tooltip("Die Dauer des Tween-Effekts in Sekunden.")]
+    [SerializeField]
+    private float m_TweenDuration = 0.2f;
+    [Tooltip("Der Easing-Typ für den Tween-Effekt.")]
+    [SerializeField]
+    private LeanTweenType m_EaseType = LeanTweenType.easeOutCubic;
 
     void Awake()
     {
-        // Finde das UI-Text-Element mit dem Tag "Timer"
+        // ... (Dein ursprünglicher Awake-Code) ...
         GameObject timerTextObject = GameObject.FindWithTag("Timer");
         if (timerTextObject != null)
         {
-            // Versuche, die Text-Komponente zu bekommen
-            timerTextUI = timerTextObject.GetComponent<TextMeshProUGUI>(); // Oder .GetComponent<Text>();
+            timerTextUI = timerTextObject.GetComponent<TextMeshProUGUI>();
             if (timerTextUI == null)
             {
                 Debug.LogError("GameObject mit Tag 'Timer' gefunden, aber es hat keine TextMeshProUGUI-Komponente (oder UnityEngine.UI.Text-Komponente).", timerTextObject);
             }
             else
             {
-                // Initialisiere m_CurrentTime beim Start des Spiels mit der timerDuration
+                // Deaktiviere das UI-Element, bis der Timer startet
+                timerTextUI.gameObject.SetActive(false);
                 m_CurrentTime = timerDuration;
-                timerTextUI.text = string.Format("{0:00}:{1:00}", Mathf.FloorToInt(m_CurrentTime / 60), Mathf.FloorToInt(m_CurrentTime % 60)); // Initiale Anzeige
+                // Setze den Text initial, aber unsichtbar
+                timerTextUI.text = string.Format("{0:00}:{1:00}", Mathf.FloorToInt(m_CurrentTime / 60), Mathf.FloorToInt(m_CurrentTime % 60));
+                m_LastSecondDisplayed = Mathf.FloorToInt(m_CurrentTime % 60);
             }
         }
         else
         {
             Debug.LogError("Kein GameObject mit dem Tag 'Timer' in der Szene gefunden. Der Timer-Text kann nicht aktualisiert werden.");
         }
+
+        if (prefabToActivate != null)
+        {
+            prefabToActivate.SetActive(false);
+        }
     }
 
-    /// <summary>
-    /// Startet den Timer neu mit der im Inspector eingestellten Dauer.
-    /// Setzt TimerEnd auf FALSE.
-    /// </summary>
     public void StartTimer()
     {
-        // Wenn bereits ein Timer läuft, stoppe ihn zuerst
         if (timerCoroutine != null)
         {
             StopCoroutine(timerCoroutine);
         }
 
-        TimerEnd = false; // TimerEnd zurücksetzen, da der Timer neu startet
-        m_CurrentTime = timerDuration; // Setze die aktuelle Zeit auf die volle Dauer
-        timerCoroutine = StartCoroutine(RunTimer()); // Starte die Coroutine
+        if (timerTextUI != null)
+        {
+            timerTextUI.gameObject.SetActive(true); // Aktiviere den Text
+            timerTextUI.transform.localScale = Vector3.one;
+        }
+
+        if (prefabToActivate != null)
+        {
+            prefabToActivate.SetActive(true);
+        }
+
+        TimerEnd = false;
+        m_CurrentTime = timerDuration;
+        m_LastSecondDisplayed = Mathf.FloorToInt(m_CurrentTime % 60) + 1; // Setze die letzte Sekunde zurück, um den ersten Tween auszulösen
+
+        timerCoroutine = StartCoroutine(RunTimer());
         Debug.Log($"Timer gestartet für {timerDuration} Sekunden.");
 
-        // Timer-UI beim Start aktualisieren
         UpdateTimerUI(m_CurrentTime);
     }
 
-    /// <summary>
-    /// Eine Coroutine, die den Timer herunterzählt.
-    /// </summary>
+    // ... Rest des Codes bleibt unverändert ...
+
     private IEnumerator RunTimer()
     {
         while (m_CurrentTime > 0)
         {
-            // Aktualisiere die UI in jedem Frame
             UpdateTimerUI(m_CurrentTime);
-
-            yield return null; // Warte einen Frame
-            m_CurrentTime -= Time.deltaTime; // Zähle die Zeit herunter
+            yield return null;
+            m_CurrentTime -= Time.deltaTime;
         }
 
-        // Timer ist beendet
-        m_CurrentTime = 0; // Sicherstellen, dass die Zeit nicht negativ wird
-        UpdateTimerUI(m_CurrentTime); // Letztes Update, um 00:00 anzuzeigen
-        TimerEnd = true; // TimerEnd auf TRUE setzen
+        m_CurrentTime = 0;
+        UpdateTimerUI(m_CurrentTime);
+        TimerEnd = true;
         Debug.Log("Timer beendet!");
-        PlayerCar playerCar = PlayerCar.m_Current; // Hole die aktuelle Spieler-Auto-Instanz
-        if (PlayerCar.m_Current != null) // Sicherstellen, dass PlayerCar existiert
+
+        if (PlayerCar.m_Current != null)
         {
             PlayerCar.m_Current.m_Control = false;
         }
 
-        // Falls "lose-ui" nicht schon gezeigt wird
-        // if (UISystem.FindOpenUIByName("lose-ui") != null) {
-        UISystem.ShowUI("win-ui");
-
-        // }
+        // NEU: Verwenden Sie hier die Null-Prüfung und UISystem.FindOpenUIByName
+        if (UISystem.FindOpenUIByName("win-ui") == null)
+        {
+            UISystem.ShowUI("win-ui");
+        }
 
         if (GameControl.m_Current != null)
         {
@@ -106,18 +131,22 @@ public class Timer : MonoBehaviour
         {
             Debug.LogError("GameControl.m_Current is null. Cannot set m_WonRace.");
         }
+
+        // NEU: Deaktiviere den Prefab, wenn der Timer abläuft
+        if (prefabToActivate != null)
+        {
+            prefabToActivate.SetActive(false);
+        }
     }
 
-    /// <summary>
-    /// Aktualisiert das UI-Text-Element mit der gegebenen Zeit.
-    /// </summary>
-    /// <param name="timeToDisplay">Die verbleibende Zeit in Sekunden.</param>
     private void UpdateTimerUI(float timeToDisplay)
     {
-        // Falls "lose-ui" angezeigt wird, zerstöre das Timer-Objekt
+        // NEU: Prüfe, ob eine "lose-ui" aktiv ist und stoppe den Timer, um Konflikte zu vermeiden
         if (UISystem.FindOpenUIByName("lose-ui") != null)
         {
-            Destroy(this.gameObject);
+            StopTimer();
+            if (timerTextUI != null) timerTextUI.gameObject.SetActive(false);
+            if (prefabToActivate != null) prefabToActivate.SetActive(false);
             return;
         }
 
@@ -126,22 +155,29 @@ public class Timer : MonoBehaviour
             int minutes = Mathf.FloorToInt(timeToDisplay / 60);
             int seconds = Mathf.FloorToInt(timeToDisplay % 60);
             timerTextUI.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+
+            if (seconds != m_LastSecondDisplayed)
+            {
+                LeanTween.cancel(timerTextUI.gameObject);
+                timerTextUI.transform.localScale = Vector3.one;
+                LeanTween.scale(timerTextUI.gameObject, Vector3.one * m_ScaleFactor, m_TweenDuration)
+                    .setEase(m_EaseType)
+                    .setLoopPingPong(1);
+
+                m_LastSecondDisplayed = seconds;
+            }
         }
     }
 
-    /// <summary>
-    /// Fügt dem Timer eine bestimmte Anzahl von Sekunden hinzu.
-    /// </summary>
-    /// <param name="secondsToAdd">Die Sekunden, die hinzugefügt werden sollen.</param>
     public void AddTime(float secondsToAdd)
     {
         m_CurrentTime += secondsToAdd;
-        timerDuration += secondsToAdd; // Auch die Basisdauer anpassen, falls der Timer neu gestartet wird
+        // NEU: Hier musst du die timerDuration auch aktualisieren, damit der Timer richtig initialisiert wird, wenn er neu gestartet wird
+        timerDuration += secondsToAdd;
         Debug.Log($"Timer: {secondsToAdd} Sekunden hinzugefügt. Neue Zeit: {m_CurrentTime:F2}s");
-        UpdateTimerUI(m_CurrentTime); // UI sofort aktualisieren
+        UpdateTimerUI(m_CurrentTime);
     }
 
-    // Optional: Eine Methode zum manuellen Stoppen des Timers, falls benötigt
     public void StopTimer()
     {
         if (timerCoroutine != null)
@@ -149,8 +185,9 @@ public class Timer : MonoBehaviour
             StopCoroutine(timerCoroutine);
             timerCoroutine = null;
             Debug.Log("Timer manuell gestoppt.");
-            // Optional: UI auch hier aktualisieren, z.B. auf 0 oder eine Meldung
-            UpdateTimerUI(0);
+            // Deaktiviere die UI-Elemente, wenn der Timer stoppt
+            if (timerTextUI != null) timerTextUI.gameObject.SetActive(false);
+            if (prefabToActivate != null) prefabToActivate.SetActive(false);
         }
     }
 }

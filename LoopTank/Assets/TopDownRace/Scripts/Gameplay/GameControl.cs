@@ -2,19 +2,27 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UIElements; // Beachte: UnityEngine.UIElements ist für das neue UI-Toolkit, UnityEngine.UI für das alte.
+using TMPro; // Für TextMeshPro
+using System;
 
 namespace TopDownRace
 {
     public class GameControl : MonoBehaviour
     {
+        // Singleton-Instanz, die von überall zugänglich ist
+        public static GameControl m_Current;
+
+        // Dein ursprünglicher Code
+        [Tooltip("Anzahl der Runden, die für den Sieg benötigt werden.")]
         public int m_levelRounds;
+
         [HideInInspector]
         public int m_FinishedLaps;
 
-        public static GameControl m_Current;
-
+        [Tooltip("Prefab für das Spielerauto.")]
         public GameObject m_PlayerCarPrefab;
+
+        [Tooltip("Prefab für die KI-Gegner.")]
         public GameObject m_RivalCarPrefab;
 
         [HideInInspector]
@@ -29,80 +37,118 @@ namespace TopDownRace
         public bool m_WonRace;
 
         [HideInInspector]
-        public int m_StartTimer;
+        public bool m_StartRace;
 
         [HideInInspector]
-        public bool m_StartRace;
-        public static bool m_restartGame;
+        public int m_StartTimer;
 
-        //Timer
-        public Timer roundTimer; // Im Inspector zuweisen!
-        private bool timerStarted = false; // Merkt, ob der Timer schon gestartet wurde
-        private bool timerUiShown = true; // Verhindert mehrfaches Anzeigen der UI
+        // Timer
+        private Timer roundTimer;
+        private float m_LapStartTime;
+
+        // Timer-UI
+        private TextMeshProUGUI m_TimerText;
+
+        // NEU: Referenz auf die Kamera, die dem Spieler folgt
+        [Tooltip("Das CameraFollow-Skript in der Szene.")]
+        public CameraFollow m_CameraFollow;
+
 
         private void Awake()
         {
-            GhostManager.Instance.ClearAllGhosts();
+            // Sichere Singleton-Implementierung
+            if (m_Current != null && m_Current != this)
+            {
+                Destroy(this.gameObject);
+                return;
+            }
+            m_Current = this;
+            DontDestroyOnLoad(this.gameObject);
+        }
 
+        // NEU: Diese Methode wird immer aufgerufen, wenn die Szene geladen wird
+        // und ist der perfekte Ort, um alle Szene-spezifischen Referenzen zu finden.
+        private void OnEnable()
+        {
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        private void OnDisable()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            // Initialisiere die Spielvariablen
             m_LostRace = false;
             m_WonRace = false;
             m_StartRace = false;
             m_FinishedLaps = 0;
-            m_Current = this;
-            m_restartGame = true;
-        }
-        // Start is called before the first frame update
-        void Start()
-        {
-            m_Cars = new GameObject[4];
 
-            // Player spawnen
-            GameObject playerCar = Instantiate(m_PlayerCarPrefab);
-            playerCar.transform.position = RaceTrackControl.m_Main.m_StartPositions[0].position;
-            playerCar.transform.rotation = RaceTrackControl.m_Main.m_StartPositions[0].rotation;
-            m_Cars[0] = playerCar;
+            // Finde alle Szene-spezifischen Objekte neu
+            FindSceneReferences();
 
-            // ➜ LapRecorder sicherstellen (falls nicht schon am Prefab)
-            var recorder = playerCar.GetComponent<LapRecorder>();
-            if (recorder == null) recorder = playerCar.AddComponent<LapRecorder>();
-
-            // ➜ GhostManager mit Recorder füttern
-            GhostManager.Instance.playerRecorder = recorder;
-
-            // (Optional) gleich Ghost für die neue Runde vorbereiten
-            GhostManager.Instance.OnLapStarted();
-
-            // Rivals spawnen (unverändert)
-            for (int i = 1; i < 4; i++)
-            {
-                if (m_RivalCarPrefab == null)
-                {
-                    continue;
-                }
-                GameObject rivalCar = Instantiate(m_RivalCarPrefab);
-                rivalCar.transform.position = RaceTrackControl.m_Main.m_StartPositions[i].position;
-                rivalCar.transform.rotation = RaceTrackControl.m_Main.m_StartPositions[i].rotation;
-                m_Cars[i] = rivalCar;
-            }
-
-            m_PlayerPosition = 0;
+            // Starte die Rennlogik
             StartCoroutine(Co_StartRace());
         }
 
+        void FindSceneReferences()
+        {
+            // Finde das Timer-Text-Objekt in der Szene und weise es zu
+            GameObject timerObject = GameObject.FindGameObjectWithTag("Timer");
+            if (timerObject != null)
+            {
+                m_TimerText = timerObject.GetComponent<TextMeshProUGUI>();
+                roundTimer = timerObject.GetComponent<Timer>();
+
+                if (m_TimerText == null)
+                {
+                    Debug.LogError("Das Objekt mit dem Tag 'Timer' hat keine TextMeshProUGUI-Komponente!");
+                }
+                if (roundTimer == null)
+                {
+                    Debug.LogError("Das Objekt mit dem Tag 'Timer' hat keine Timer-Komponente!");
+                }
+            }
+            else
+            {
+                Debug.LogError("Kein GameObject mit dem Tag 'Timer' in der Szene gefunden. Der Timer-Text kann nicht aktualisiert werden.");
+            }
+
+            // Finde das CameraFollow-Skript in der Szene neu
+            m_CameraFollow = FindObjectOfType<CameraFollow>();
+            if (m_CameraFollow == null)
+            {
+                Debug.LogError("CameraFollow-Skript nicht in der Szene gefunden. Die Kamera wird dem Spieler nicht folgen können!");
+            }
+        }
+
+        // Start is called before the first frame update
+        void Start()
+        {
+            // Die gesamte Start-Logik wird jetzt in OnSceneLoaded verschoben.
+            // Diese Methode kann leer bleiben, da der Start des Spiels beim Szenen-Laden
+            // über OnSceneLoaded und Co_StartRace() gesteuert wird.
+        }
 
         // Update is called once per frame
         void Update()
         {
+            if (m_StartRace)
+            {
+                UpdatePlayerPosition();
+            }
+        }
+
+        private void UpdatePlayerPosition()
+        {
             int position = 0;
-            int playerPoint = 0;
-            if (RaceTrackControl.m_Main == null || RaceTrackControl.m_Main.m_Checkpoints == null || RaceTrackControl.m_Main.m_Checkpoints.Length == 0)
-            {
-                playerPoint = 1000; // Default Wert, falls keine Checkpoints definiert sind
-            }
-            else
-            {
-                playerPoint = m_FinishedLaps * RaceTrackControl.m_Main.m_Checkpoints.Length + PlayerCar.m_Current.m_CurrentCheckpoint;
-            }
+            // NEU: Füge eine Null-Prüfung für PlayerCar.m_Current hinzu, falls es noch nicht initialisiert ist
+            if (PlayerCar.m_Current == null) return;
+
+            int playerPoint = m_FinishedLaps * RaceTrackControl.m_Main.m_Checkpoints.Length + PlayerCar.m_Current.m_CurrentCheckpoint;
+
             for (int i = 1; i < 4; i++)
             {
                 if (m_Cars[i] == null || m_Cars[i].GetComponent<Rivals>() == null) continue;
@@ -112,49 +158,43 @@ namespace TopDownRace
                     position++;
                 }
             }
-
             m_PlayerPosition = position;
         }
 
         public bool PlayerLapEndCheck()
         {
-            // NEU: 15 Sekunden zum Timer hinzufügen, wenn eine Runde beendet wurde
-            // Dies geschieht, bevor geprüft wird, ob das Rennen gewonnen ist.
-            if (roundTimer != null)
+            if (roundTimer != null && m_FinishedLaps > 1)
             {
-                roundTimer.AddTime(15f); // Füge 15 Sekunden hinzu
+                roundTimer.AddTime(15f);
+                Debug.Log($"GameControl: 15 Sekunden wurden hinzugefügt. Aktuelle Runden: {m_FinishedLaps}.");
             }
             else
             {
-                Debug.LogWarning("GameControl: roundTimer ist nicht zugewiesen oder gefunden. Kann keine Zeit hinzufügen.");
+                Debug.Log($"GameControl: Keine Zeit hinzugefügt (m_FinishedLaps ist {m_FinishedLaps}).");
             }
 
             if (m_FinishedLaps == m_levelRounds)
             {
                 if (!m_LostRace)
                 {
-                    PlayerCar.m_Current.m_Control = false;
+                    // NEU: Füge eine Null-Prüfung hinzu
+                    if (PlayerCar.m_Current != null) PlayerCar.m_Current.m_Control = false;
                     UISystem.ShowUI("win-ui");
                     m_WonRace = true;
                 }
                 else
                 {
-                    PlayerCar.m_Current.m_Control = false;
+                    // NEU: Füge eine Null-Prüfung hinzu
+                    if (PlayerCar.m_Current != null) PlayerCar.m_Current.m_Control = false;
                     UISystem.ShowUI("lose-ui");
-                    // Finde Objekt mit dem Tag "Score" und setze den Text auf m_FinishedLaps
                     var scoreText = GameObject.FindGameObjectsWithTag("Score");
                     if (scoreText.Length > 0 && scoreText[0].GetComponent<UnityEngine.UI.Text>() != null)
                     {
                         scoreText[0].GetComponent<UnityEngine.UI.Text>().text = m_FinishedLaps.ToString();
                     }
-                    else
-                    {
-                        Debug.LogWarning("Score-Text-Objekt mit Tag 'Score' nicht gefunden oder hat keine UnityEngine.UI.Text-Komponente.");
-                    }
                 }
                 return true;
             }
-
             return false;
         }
 
@@ -165,68 +205,79 @@ namespace TopDownRace
                 if (!m_WonRace)
                 {
                     m_LostRace = true;
-                }
-            }
-        }
+                    // NEU: Füge eine Null-Prüfung hinzu
+                    if (PlayerCar.m_Current != null) PlayerCar.m_Current.m_Control = false;
+                    UISystem.ShowUI("lose-ui");
 
-
-        IEnumerator Co_StartRace()
-        {
-            m_StartTimer = 3;
-            yield return new WaitForSeconds(1.5f);
-            m_StartTimer--;
-            yield return new WaitForSeconds(1);
-            m_StartTimer--;
-            yield return new WaitForSeconds(1);
-            m_StartTimer--;
-            m_StartRace = true;
-
-            // ➜ Jetzt beginnt die erste Runde wirklich:
-            StartLapTimer();
-            // ➜ Hier den GhostManager informieren, dass die Runde begonnen hat:
-
-            if (roundTimer == null)
-            {
-                //find timer automatically if not set
-                GameObject timerObject = GameObject.FindGameObjectWithTag("Timer");
-                if (timerObject != null)
-                {
-                    roundTimer = timerObject.GetComponent<Timer>();
-                    if (roundTimer == null)
+                    var scoreText = GameObject.FindGameObjectsWithTag("Score");
+                    if (scoreText.Length > 0 && scoreText[0].GetComponent<UnityEngine.UI.Text>() != null)
                     {
-                        Debug.LogError("GameControl: The object with tag 'Timer' does not have a Timer component.");
+                        scoreText[0].GetComponent<UnityEngine.UI.Text>().text = m_FinishedLaps.ToString();
                     }
                 }
-                else
-                {
-                    Debug.LogError("GameControl: No GameObject with tag 'Timer' found!");
-                }
-                if (roundTimer == null)
-                {
-                    Debug.LogError("GameControl: No Timer found! Please assign a Timer in the Inspector or ensure one exists in the scene.");
-                    yield break; // Ensure we exit the coroutine if no timer is found
-                }
-            }
-            // TIMER NUR BEI ERSTER RUNDE STARTEN
-            if (!timerStarted && roundTimer != null)
-            {
-                Debug.Log("GameControl: Starting round timer.");
-                roundTimer.StartTimer();
-                timerStarted = true;
-                timerUiShown = false; // falls z.B. Reset erlaubt ist
             }
         }
 
-        ///----------------Gemini-------------------
+        private IEnumerator Co_StartRace()
+        {
+            m_Cars = new GameObject[4];
 
-        private float m_LapStartTime;
+            // Player spawnen
+            GameObject playerCar = Instantiate(m_PlayerCarPrefab, RaceTrackControl.m_Main.m_StartPositions[0].position, RaceTrackControl.m_Main.m_StartPositions[0].rotation);
+            m_Cars[0] = playerCar;
+
+            // NEU: Weise die PlayerCar-Singleton-Instanz hier zu
+            PlayerCar.m_Current = playerCar.GetComponent<PlayerCar>();
+
+            var recorder = playerCar.GetComponent<LapRecorder>();
+            if (recorder == null) recorder = playerCar.AddComponent<LapRecorder>();
+            GhostManager.Instance.playerRecorder = recorder;
+            GhostManager.Instance.OnLapStarted();
+
+            // NEU: Weisen Sie der Kamera das neue Spielerauto als Ziel zu
+            if (m_CameraFollow != null)
+            {
+                m_CameraFollow.SetTarget(playerCar.transform);
+            }
+
+            // Rivals spawnen
+            for (int i = 1; i < 4; i++)
+            {
+                if (m_RivalCarPrefab == null) continue;
+
+                GameObject rivalCar = Instantiate(m_RivalCarPrefab, RaceTrackControl.m_Main.m_StartPositions[i].position, RaceTrackControl.m_Main.m_StartPositions[i].rotation);
+                m_Cars[i] = rivalCar;
+            }
+
+            m_PlayerPosition = 0;
+
+            m_StartTimer = 3;
+            for (int i = 3; i > 0; i--)
+            {
+                m_StartTimer = i;
+                yield return new WaitForSeconds(1);
+            }
+
+            m_StartRace = true;
+            m_StartTimer = 0;
+
+            if (roundTimer != null)
+            {
+                roundTimer.StartTimer();
+                StartLapTimer();
+                Debug.Log("Rennen gestartet!");
+            }
+            else
+            {
+                Debug.LogError("Der Runden-Timer konnte nicht gestartet werden, da das 'Timer'-Objekt nicht gefunden wurde.");
+            }
+        }
 
         public float GetCurrentLapTime()
         {
             return Time.time - m_LapStartTime;
         }
 
-        // Rufe das beim Start einer neuen Runde auf:
         public void StartLapTimer()
         {
             m_LapStartTime = Time.time;
