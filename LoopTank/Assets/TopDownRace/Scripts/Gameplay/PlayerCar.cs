@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro; // Notwendig für TextMeshPro
+using TMPro;
 
 namespace TopDownRace
 {
@@ -80,15 +80,8 @@ namespace TopDownRace
         // --- NEUE VARIABLEN FÜR DEN GESCHWINDIGKEITSBOOST ---
         [Tooltip("Der Multiplikator, um den die Geschwindigkeit während des Boosts erhöht wird.")]
         public float m_BoostSpeedMultiplier = 1.5f;
-        [Tooltip("Die Rate, mit der der Kraftstoff pro Sekunde abnimmt.")]
-        public float m_FuelDrainRate = 10f; // Kraftstoffabnahme pro Sekunde
-        [Tooltip("Die Rate, mit der der Kraftstoff pro Sekunde aufgefüllt wird.")]
-        public float m_FuelRefillRate = 5f; // Kraftstoffauffüllrate pro Sekunde
-        [Tooltip("Die maximale Menge an Kraftstoff.")]
-        public float m_MaxFuel = 100f;
 
         private float m_BaseSpeedForce;
-        private float m_CurrentFuel;
         private bool m_IsBoosting = false;
         // ---------------------------------------------------
 
@@ -96,14 +89,6 @@ namespace TopDownRace
 
         private Transform m_TankTop;
         private bool m_CollisionsIgnored = false;
-
-        // NEU: Variable für das UI-Prefab
-        [Tooltip("Das Prefab, das als UI-Element für die Fuel-Anzeige instanziiert wird.")]
-        public GameObject m_FuelUIPrefab;
-
-        // Private Variable für die UI-Komponente
-        private TextMeshProUGUI m_FuelTextUI;
-        private float m_LastDisplayedFuel;
 
         void Awake()
         {
@@ -115,8 +100,6 @@ namespace TopDownRace
             m_CurrentCheckpoint = 1;
             m_Control = true;
             m_Speed = 80;
-            m_CurrentFuel = m_MaxFuel; // Setze den Anfangswert des Fuels auf Maximum
-            m_LastDisplayedFuel = -1; // Setze einen ungültigen Wert, um das erste Update zu erzwingen
 
             m_TankTop = transform.Find("TankTop");
 
@@ -195,32 +178,8 @@ namespace TopDownRace
             }
             else
             {
-                // Speichere den ursprünglichen Wert von m_SpeedForce
                 m_BaseSpeedForce = m_CarPhysics.m_SpeedForce;
             }
-
-            // --- NEUER CODE FÜR UI-INSTANZIIERUNG ---
-            if (m_FuelUIPrefab != null)
-            {
-                // Erstelle eine Instanz des Prefabs
-                GameObject fuelUIInstance = Instantiate(m_FuelUIPrefab);
-
-                // Finde die TextMeshProUGUI-Komponente im instanziierten Objekt
-                // und weise sie unserer privaten Variable zu
-                m_FuelTextUI = fuelUIInstance.GetComponentInChildren<TextMeshProUGUI>();
-
-                if (m_FuelTextUI == null)
-                {
-                    Debug.LogError("Das zugewiesene Fuel-UI-Prefab enthält keine TextMeshProUGUI-Komponente in sich oder in seinen Kindern!");
-                }
-            }
-            else
-            {
-                Debug.LogWarning("Kein Fuel-UI-Prefab zugewiesen! Die UI-Anzeige wird nicht erstellt.");
-            }
-            // ----------------------------------------
-
-            UpdateFuelUI(); // Aktualisiere die UI beim Start
         }
 
         private void OnTriggerEnter2D(Collider2D collision)
@@ -308,36 +267,55 @@ namespace TopDownRace
                         GetComponent<CarPhysics>().m_InputSteer = -horizontalInput * m_RotationSpeed;
                     }
 
-                    // NEU: Logik für Fuel-Boost
-                    if (Input.GetKey(KeyCode.Space) && m_CurrentFuel > 0 && m_CarPhysics != null)
+                    // NEUE Logik für Fuel-Boost und UI-Anzeige
+                    bool spacePressed = Input.GetKey(KeyCode.Space);
+
+                    if (spacePressed)
                     {
-                        if (!m_IsBoosting)
+                        // UI einblenden, wenn die Space-Taste gedrückt wird
+                        if (FuelMechanic.Instance != null)
                         {
-                            m_CarPhysics.m_SpeedForce = m_BaseSpeedForce * m_BoostSpeedMultiplier;
-                            m_IsBoosting = true;
+                            FuelMechanic.Instance.SetFuelUIActive(true);
                         }
 
-                        m_CurrentFuel -= m_FuelDrainRate * Time.deltaTime;
-                        if (m_CurrentFuel < 0)
+                        if (FuelMechanic.Instance != null && FuelMechanic.Instance.CurrentFuel > 0)
                         {
-                            m_CurrentFuel = 0;
+                            if (!m_IsBoosting)
+                            {
+                                m_CarPhysics.m_SpeedForce = m_BaseSpeedForce * m_BoostSpeedMultiplier;
+                                m_IsBoosting = true;
+                            }
+
+                            // Kraftstoff abziehen
+                            FuelMechanic.Instance.DrainFuel();
+                        }
+                        else // Kein Kraftstoff mehr, Boost beenden
+                        {
+                            if (m_IsBoosting)
+                            {
+                                m_CarPhysics.m_SpeedForce = m_BaseSpeedForce;
+                                m_IsBoosting = false;
+                            }
                         }
                     }
                     else
                     {
+                        // UI ausblenden, wenn die Space-Taste losgelassen wird
+                        if (FuelMechanic.Instance != null)
+                        {
+                            FuelMechanic.Instance.SetFuelUIActive(false);
+                        }
+
+                        // Wenn der Boost nicht aktiv ist, Kraftstoff auffüllen
                         if (m_IsBoosting)
                         {
                             m_CarPhysics.m_SpeedForce = m_BaseSpeedForce;
                             m_IsBoosting = false;
                         }
 
-                        if (m_CurrentFuel < m_MaxFuel)
+                        if (FuelMechanic.Instance != null)
                         {
-                            m_CurrentFuel += m_FuelRefillRate * Time.deltaTime;
-                            if (m_CurrentFuel > m_MaxFuel)
-                            {
-                                m_CurrentFuel = m_MaxFuel;
-                            }
+                            FuelMechanic.Instance.RefillFuel();
                         }
                     }
                 }
@@ -370,24 +348,6 @@ namespace TopDownRace
                 }
                 m_AccelerationAudioSource.pitch = Mathf.Lerp(m_MinPitch, m_MaxPitch, speedNormalized);
                 m_AccelerationAudioSource.volume = Mathf.Lerp(m_MinAccelerationVolume, m_MaxAccelerationVolume, speedNormalized);
-            }
-
-            // NEU: Rufe die Methode zur Aktualisierung der UI auf
-            UpdateFuelUI();
-        }
-
-        // NEU: Methode zur Aktualisierung des Fuel-UI-Elements
-        private void UpdateFuelUI()
-        {
-            // Überprüfen, ob das UI-Element zugewiesen wurde
-            if (m_FuelTextUI != null)
-            {
-                // Um nur zu aktualisieren, wenn sich der Wert geändert hat
-                if (Mathf.FloorToInt(m_CurrentFuel) != m_LastDisplayedFuel)
-                {
-                    m_FuelTextUI.text = $"Fuel: {Mathf.FloorToInt(m_CurrentFuel)}";
-                    m_LastDisplayedFuel = Mathf.FloorToInt(m_CurrentFuel);
-                }
             }
         }
     }

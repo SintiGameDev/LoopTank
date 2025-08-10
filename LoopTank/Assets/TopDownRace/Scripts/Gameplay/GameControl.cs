@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using TMPro; // Für TextMeshPro
+using TMPro;
 using System;
 
 namespace TopDownRace
@@ -11,6 +11,9 @@ namespace TopDownRace
     {
         // Singleton-Instanz, die von überall zugänglich ist
         public static GameControl m_Current;
+
+        // NEUE ZEILE: Deklaration des OnRoundEnd-Events
+        public event System.Action OnRoundEnd;
 
         // Dein ursprünglicher Code
         [Tooltip("Anzahl der Runden, die für den Sieg benötigt werden.")]
@@ -163,6 +166,9 @@ namespace TopDownRace
 
         public bool PlayerLapEndCheck()
         {
+            // Löse das Event aus, um alle PickupSpawner zu informieren, dass eine Runde beendet ist.
+            OnRoundEnd?.Invoke();
+
             if (roundTimer != null && m_FinishedLaps > 1)
             {
                 roundTimer.AddTime(15f);

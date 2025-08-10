@@ -135,36 +135,31 @@ namespace TopDownRace
                 return;
             }
 
-            // Zeigt den Last Lap Time Text erst ab Runde 2 an, da Runde 1 die erste vollständige Runde ist.
-            if (lastLapTimeText != null && currentLapNumber > 1)
+            // Korrigierte Bedingung: Zeigt den Text nur an, wenn bereits eine vorherige Rundenzeit existiert (also ab Runde 2)
+            if (lastLapTimeText != null && lastLapTime > 0)
             {
                 if (lastLapTimeFadeRoutine != null) StopCoroutine(lastLapTimeFadeRoutine);
 
                 float timeDifference = currentLapTime - lastLapTime;
                 string statusText = "";
-                Color textColor = Color.white;
+                //Color textColor = timeDifference < 0 ? Color.green : Color.red;
 
-                // Wir verwenden die Differenz zur vorherigen Runde, die in lastLapTime gespeichert ist.
-                // In der ersten vollständigen Runde (currentLapNumber == 1) gibt es noch keine vorherige Zeit.
-                if (lastLapTime > 0)
+                // WIEDERHERGESTELLTE LOGIK: Anzeige der Differenz zur vorherigen Runde
+                if (timeDifference < 0)
                 {
-                    if (timeDifference < 0)
-                    {
-                        statusText = $"Best Lap: {FormatTime(timeDifference)}";
-                        // Die Farbe wird in der Coroutine gesetzt
-                    }
-                    else
-                    {
-                        statusText = $"Previous Lap: {FormatTime(timeDifference)}";
-                        // Die Farbe wird in der Coroutine gesetzt
-                    }
+                    statusText = $"Best Lap: {FormatTime(timeDifference)}";
+                }
+                else
+                {
+                    statusText = $"Previous Lap: {FormatTime(timeDifference)}";
                 }
 
+                //lastLapTimeText.color = textColor;
                 lastLapTimeText.text = statusText;
                 lastLapTimeFadeRoutine = StartCoroutine(FadeText(lastLapTimeText, lastLapTimeFadeDuration, lastLapTimeDisplayTime));
             }
 
-            // Hier haben wir die Logik vereinfacht. Die letzte Rundenzeit wird immer gespeichert.
+            // Speichere die aktuelle Rundenzeit für den nächsten Vergleich
             lastLapTime = currentLapTime;
 
             if (m_LapFinishedSound != null && m_AudioSource != null)
